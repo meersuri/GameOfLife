@@ -11,56 +11,63 @@ DenseUniverse::DenseUniverse(size_t rows, size_t cols): Universe(rows, cols) {
     for (size_t row = 0; row < rows; ++row) {
         std::vector<std::unique_ptr<Cell>> cell_row;
         for (size_t col = 0; col < cols; ++col) {
-            cell_row.push_back(std::make_unique<Cell>(false));
+            cell_row.push_back(std::make_unique<Cell>(row, col, m_cols * row + col, false));
         }
         m_cell_grid.push_back(std::move(cell_row));
     }
-    computeNeighbors();
 }
 
-void DenseUniverse::computeNeighbors() {
+std::vector<Cell*> DenseUniverse::getNeighbors(Cell* cell) {
+    std::vector<Cell*> neighbors;
     int row_count = static_cast<int>(m_rows);
     int col_count = static_cast<int>(m_cols);
-    for (int row = 0; row < row_count; ++row) {
-        for (int col = 0; col < col_count; ++col) {
-            Cell* cell = m_cell_grid[row][col].get();
-            for (int dr = -1; dr < 2; dr++) {
-                for (int dc = -1; dc < 2; dc++) {
-                    if (dr == 0 && dc == 0) {
-                        continue;
-                    }
-                    int nei_row = (row) + dr;
-                    int nei_col = (col) + dc;
-                    if (nei_row < 0 || nei_row >= row_count || nei_col < 0 || nei_col >= col_count) {
-                        continue;
-                    }
-                    cell->m_neighbors.push_back(m_cell_grid[nei_row][nei_col].get());
-                }
+    for (int dr = -1; dr < 2; dr++) {
+        for (int dc = -1; dc < 2; dc++) {
+            if (dr == 0 && dc == 0) {
+                continue;
             }
+            int nei_row = cell->row() + dr;
+            int nei_col = cell->col() + dc;
+            if (nei_row < 0 || nei_row >= row_count || nei_col < 0 || nei_col >= col_count) {
+                continue;
+            }
+            neighbors.push_back(m_cell_grid[nei_row][nei_col].get());
         }
     }
+    return neighbors;
 }
 
-Cell* DenseUniverse::cell(size_t row, size_t col) {
+bool DenseUniverse::isCellAlive(size_t row, size_t col) {
     // TODO adds bounds checking?
-    return m_cell_grid[row][col].get();
+    return m_cell_grid[row][col]->isAlive();
+}
+
+void DenseUniverse::makeCellAlive(size_t row, size_t col) {
+    m_cell_grid[row][col]->makeAlive();
+}
+
+void DenseUniverse::makeCellDead(size_t row, size_t col) {
+    m_cell_grid[row][col]->makeDead();
 }
 
 void DenseUniverse::advance() {
+    // copy the whole grid - TODO can we do better?
     std::vector<std::vector<std::unique_ptr<Cell>>> grid_copy;
-    for (const std::vector<std::unique_ptr<Cell>>& row: m_cell_grid) {
+    for (size_t row = 0; row < m_rows; row++) {
+        const auto& cell_row = m_cell_grid[row];
         std::vector<std::unique_ptr<Cell>> row_copy;
-        for (const std::unique_ptr<Cell>& cell: row) {
-            row_copy.push_back(std::make_unique<Cell>(cell->isAlive()));
+        for (size_t col = 0; col < m_cols; col++) {
+            Cell* cell = cell_row[col].get();
+            row_copy.push_back(std::make_unique<Cell>(row, col, m_cols * row + col, cell->isAlive()));
         }
         grid_copy.push_back(std::move(row_copy));
     }
-
+    // update each cell in the copy
     for (size_t row = 0; row < m_rows; row++) {
         for (size_t col = 0; col < m_cols; col++) {
             Cell* cell = m_cell_grid[row][col].get();
             size_t alive_count = 0;
-            for (Cell* neighbor: cell->neighbors()) {
+            for (Cell* neighbor: getNeighbors(cell)) {
                 alive_count = neighbor->isAlive() ? alive_count + 1: alive_count;
             }
             if (cell->isAlive()) {
@@ -74,6 +81,5 @@ void DenseUniverse::advance() {
         }
     }
     std::swap(m_cell_grid, grid_copy);
-    computeNeighbors();
 }
 

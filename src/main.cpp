@@ -9,7 +9,7 @@ using namespace std::chrono_literals;
 
 void seedUniverse(Universe* universe, const std::vector<std::pair<int, int>>& seed) {
     for (const std::pair<int, int>& p: seed) {
-        universe->cell(p.first, p.second)->makeAlive();
+        universe->makeCellAlive(p.first, p.second);
     }
 }
 
@@ -19,7 +19,7 @@ void visualizeUniverse(Universe* universe, size_t time_steps) {
     for (int i = 0; i < time_steps; ++i) {
         for (int row = 0; row < universe->rowCount(); row++) {
             for (int col = 0; col < universe->colCount(); col++) {
-                if (universe->cell(row, col)->isAlive()) {
+                if (universe->isCellAlive(row, col)) {
                     painter.paint(row, col, '*', Color::green);
                 }
                 else {

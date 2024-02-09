@@ -1,6 +1,9 @@
+#include <memory>
+
 #include "cell.hpp"
 
-Cell::Cell(bool alive): m_is_alive(alive) {}
+Cell::Cell(size_t row, size_t col, size_t flat_pos, bool alive):
+    m_row(row), m_col(col), m_flat_pos(flat_pos), m_is_alive(alive) {}
 
 bool Cell::isAlive() const {
     return m_is_alive;
@@ -13,8 +16,3 @@ void Cell::makeAlive() {
 void Cell::makeDead() {
     m_is_alive = false;
 }
-
-const std::vector<Cell*> Cell::neighbors() const {
-    return m_neighbors;
-}
-

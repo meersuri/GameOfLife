@@ -3,18 +3,18 @@
 #include "painter.hpp"
 
 GridPainter::GridPainter(size_t rows, size_t cols): m_rows(rows), m_cols(cols) {
-    std::cout << m_esc << "?25l" << std::flush;
+    std::cout << m_esc << "?25l" << std::flush; // hide cursor
 }
 
 GridPainter::~GridPainter() {
-    std::cout << m_esc << "?25h" << std::flush;
+    std::cout << m_esc << "?25h" << std::flush; // show cursor
 }
 
 void GridPainter::clear() {
-    std::cout << m_esc << "1J" << std::flush;
+    std::cout << m_esc << "1J" << std::flush; // clear from cursor to top
 }
 
-void GridPainter::shiftCursor(size_t row, size_t col) {
+void GridPainter::shiftCursor(size_t row, size_t col) { // zero based line, col (0, 0) is top left
     std::cout << m_esc << std::to_string(row) << ";" << std::to_string(col) << "H" << std::flush;
 }
 

@@ -85,6 +85,19 @@ void DenseUniverse::advance() {
     std::swap(m_cell_grid, grid_copy);
 }
 
+std::vector<std::pair<int, int>> DenseUniverse::getAliveCellsPos() {
+    std::vector<std::pair<int, int>> alive_pos;
+    for (size_t row = 0; row < m_rows; row++) {
+        for (size_t col = 0; col < m_cols; col++) {
+            if (m_cell_grid[row][col]->isAlive()) {
+                alive_pos.push_back({row, col});
+            }
+        }
+    }
+    return alive_pos;
+}
+
+
 SparseUniverse::SparseUniverse(size_t rows, size_t cols): Universe(rows, cols) {}
 
 std::set<std::unique_ptr<Cell>>::iterator SparseUniverse::findAliveCellByPos(size_t row, size_t col) {
@@ -161,4 +174,12 @@ void SparseUniverse::advance() {
         next_alive_cells.insert(std::move(new_cell));
     }
     std::swap(m_alive_cells, next_alive_cells);
+}
+
+std::vector<std::pair<int, int>> SparseUniverse::getAliveCellsPos() {
+    std::vector<std::pair<int, int>> alive_pos;
+    for (const std::unique_ptr<Cell>& cell: m_alive_cells) {
+        alive_pos.push_back({cell->row(), cell->col()});
+    }
+    return alive_pos;
 }

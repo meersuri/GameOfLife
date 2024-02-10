@@ -17,12 +17,8 @@ void visualizeUniverse(Universe* universe, size_t time_steps) {
     GridPainter painter(universe->rowCount(), universe->colCount());
     painter.clear();
     for (int i = 0; i < time_steps; ++i) {
-        for (int row = 0; row < universe->rowCount(); row++) {
-            for (int col = 0; col < universe->colCount(); col++) {
-                if (universe->isCellAlive(row, col)) {
-                    painter.paint(row, col, '*', Color::green);
-                }
-            }
+        for (const std::pair<int, int>& pos: universe->getAliveCellsPos()) {
+            painter.paint(pos.first, pos.second, '*', Color::green);
         }
         universe->advance();
         std::this_thread::sleep_for(500ms);

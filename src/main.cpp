@@ -22,13 +22,11 @@ void visualizeUniverse(Universe* universe, size_t time_steps) {
                 if (universe->isCellAlive(row, col)) {
                     painter.paint(row, col, '*', Color::green);
                 }
-                else {
-                    painter.paint(row, col, ' ', Color::black);
-                }
             }
         }
         universe->advance();
         std::this_thread::sleep_for(500ms);
+        painter.clear();
         painter.shiftCursor(0, 0);
     }
     painter.shiftCursor(universe->rowCount() + 1, 1);

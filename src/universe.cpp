@@ -1,6 +1,8 @@
 #include <vector>
 #include <memory>
 #include <iostream>
+#include <algorithm>
+#include <map>
 
 #include "universe.hpp"
 #include "cell.hpp"
@@ -83,3 +85,80 @@ void DenseUniverse::advance() {
     std::swap(m_cell_grid, grid_copy);
 }
 
+SparseUniverse::SparseUniverse(size_t rows, size_t cols): Universe(rows, cols) {}
+
+std::set<std::unique_ptr<Cell>>::iterator SparseUniverse::findAliveCellByPos(size_t row, size_t col) {
+    size_t target = m_cols * row + col;
+    auto iter = std::lower_bound(m_alive_cells.begin(), m_alive_cells.end(), target,
+            [](const std::unique_ptr<Cell>& a, size_t flat_pos) {
+                return  a->flatPos() < flat_pos;
+            });
+    if (iter == m_alive_cells.end() || (*iter)->flatPos() > target) {
+        return m_alive_cells.end();
+    }
+    return iter;
+}
+
+bool SparseUniverse::isCellAlive(size_t row, size_t col) {
+    return findAliveCellByPos(row, col) != m_alive_cells.end();
+}
+
+void SparseUniverse::makeCellAlive(size_t row, size_t col) {
+    auto iter = findAliveCellByPos(row, col);
+    if (iter == m_alive_cells.end()) {
+        auto cell = std::make_unique<Cell>(row, col, m_cols * row + col, true);
+        m_alive_cells.insert(std::move(cell));
+    }
+}
+
+void SparseUniverse::makeCellDead(size_t row, size_t col) {
+    auto iter = findAliveCellByPos(row, col);
+    if (iter != m_alive_cells.end()) {
+        m_alive_cells.erase(iter);
+    }
+}
+
+void SparseUniverse::advance() {
+    // frontier: cells that are 8-connected adjacent to alive cells
+    // only the frontier cells can come alive in the next generation
+    // track how many alive neighbors each frontier cell has
+    std::map<std::pair<int, int>, size_t> frontier_hit_count;
+    std::set<std::unique_ptr<Cell>> next_alive_cells;
+    for (const std::unique_ptr<Cell>& cell: m_alive_cells) {
+        int row_count = static_cast<int>(m_rows);
+        int col_count = static_cast<int>(m_cols);
+        size_t alive_count = 0;
+        for (int dr = -1; dr < 2; dr++) {
+            for (int dc = -1; dc < 2; dc++) {
+                if (dr == 0 && dc == 0) {
+                    continue;
+                }
+                int nei_row = cell->row() + dr;
+                int nei_col = cell->col() + dc;
+                if (nei_row < 0 || nei_row >= row_count || nei_col < 0 || nei_col >= col_count) {
+                    continue;
+                }
+                if (findAliveCellByPos(nei_row, nei_col) == m_alive_cells.end()) {
+                    frontier_hit_count[{nei_row, nei_col}]++;
+                }
+                else {
+                    alive_count++;
+                }
+            }
+        }
+        if (alive_count == 2 || alive_count == 3) {
+            auto cell_copy = std::make_unique<Cell>(cell->row(), cell->col(), cell->flatPos(), true);
+            next_alive_cells.insert(std::move(cell_copy));
+        }
+    }
+    for (auto& p: frontier_hit_count) {
+        if (p.second != 3) {
+            continue;
+        }
+        size_t row = p.first.first;
+        size_t col = p.first.second;
+        auto new_cell = std::make_unique<Cell>(p.first.first, p.first.second, m_cols * row + col, true);
+        next_alive_cells.insert(std::move(new_cell));
+    }
+    std::swap(m_alive_cells, next_alive_cells);
+}

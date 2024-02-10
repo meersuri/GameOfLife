@@ -38,7 +38,7 @@ int main(int argc, char** argv) {
     std::vector<std::pair<int, int>> toad = {{2,2}, {2,3}, {2,4}, {3,1}, {3,2}, {3,3}};
     std::vector<std::pair<int, int>> bee_hive = {{2,1}, {1,2}, {1,3}, {2,4}, {3,2}, {3,3}};
     std::vector<std::pair<int, int>> glider = {{2, 1}, {3, 2}, {3, 3}, {2, 3}, {1, 3}};
-    std::unique_ptr<Universe> universe = std::make_unique<DenseUniverse>(20, 20);
+    std::unique_ptr<Universe> universe = std::make_unique<SparseUniverse>(20, 20);
     size_t time_steps = 50;
     if (argc > 1) {
         std::string pattern(argv[1]);

@@ -16,3 +16,8 @@ void Cell::makeAlive() {
 void Cell::makeDead() {
     m_is_alive = false;
 }
+
+bool operator<(const std::unique_ptr<Cell>& a, const std::unique_ptr<Cell>& b) {
+    return a->flatPos() < b->flatPos();
+}
+

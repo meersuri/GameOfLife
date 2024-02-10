@@ -4,6 +4,7 @@
 #include <filesystem>
 #include <vector>
 #include <memory>
+#include <set>
 
 class Cell; //forward declare;
 
@@ -34,6 +35,19 @@ class DenseUniverse: public Universe {
     private:
         std::vector<Cell*> getNeighbors(Cell* cell);
         std::vector<std::vector<std::unique_ptr<Cell>>> m_cell_grid;
+};
+
+// keeps only alive Cells in memory
+class SparseUniverse: public Universe {
+    public:
+        SparseUniverse(size_t rows, size_t cols);
+        void advance() override;
+        bool isCellAlive(size_t row, size_t col) override;
+        void makeCellAlive(size_t row, size_t col) override;
+        void makeCellDead(size_t row, size_t col) override;
+    private:
+        std::set<std::unique_ptr<Cell>>::iterator findAliveCellByPos(size_t row, size_t col);
+        std::set<std::unique_ptr<Cell>> m_alive_cells;
 };
 
 #endif

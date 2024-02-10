@@ -23,4 +23,6 @@ class Cell {
         bool m_is_alive{false};
 };
 
+bool operator<(const std::unique_ptr<Cell>& a, const std::unique_ptr<Cell>& b);
+
 #endif

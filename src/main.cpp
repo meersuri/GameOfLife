@@ -1,5 +1,6 @@
 #include <iostream>
 #include <thread>
+#include <map>
 
 #include "universe.hpp"
 #include "cell.hpp"
@@ -29,27 +30,19 @@ void visualizeUniverse(Universe* universe, size_t time_steps) {
 }
 
 int main(int argc, char** argv) {
-    std::vector<std::pair<int, int>> toad = {{2,2}, {2,3}, {2,4}, {3,1}, {3,2}, {3,3}};
-    std::vector<std::pair<int, int>> bee_hive = {{2,1}, {1,2}, {1,3}, {2,4}, {3,2}, {3,3}};
-    std::vector<std::pair<int, int>> glider = {{2, 1}, {3, 2}, {3, 3}, {2, 3}, {1, 3}};
+    std::map<std::string, std::vector<std::pair<int, int>>> pattern_seed {
+        {"toad", {{2,2}, {2,3}, {2,4}, {3,1}, {3,2}, {3,3}}},
+        {"bee_hive", {{2,1}, {1,2}, {1,3}, {2,4}, {3,2}, {3,3}}},
+        {"glider", {{2, 1}, {3, 2}, {3, 3}, {2, 3}, {1, 3}}},
+    };
     std::unique_ptr<Universe> universe = std::make_unique<SparseUniverse>(20, 20);
     size_t time_steps = 50;
     if (argc > 1) {
-        std::string pattern(argv[1]);
-        if (pattern == "toad") {
-            seedUniverse(universe.get(), toad);
-            time_steps = 20;
-        }
-        else if (pattern == "bee_hive") {
-            seedUniverse(universe.get(), bee_hive);
-            time_steps = 10;
-        }
-        else {
-            seedUniverse(universe.get(), glider);
-        }
+        seedUniverse(universe.get(), pattern_seed.at(argv[1]));
+        time_steps = argc > 2 ? std::stoi(argv[2]) : time_steps ;
     }
     else {
-        seedUniverse(universe.get(), glider);
+        seedUniverse(universe.get(), pattern_seed["glider"]);
     }
     visualizeUniverse(universe.get(), time_steps);
     return 0;

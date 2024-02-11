@@ -25,7 +25,11 @@ Universe::Universe(size_t rows, size_t cols): m_rows(rows), m_cols(cols) {
 Universe::Universe(const std::filesystem::path& file_path) {}
 
 void Universe::save(const std::filesystem::path& file_path) const {
-    std::ofstream file(file_path, std::ios::out);
+    std::filesystem::path save_path(file_path);
+    if (save_path.extension() != ".univ") {
+        save_path = save_path.string() + ".univ";
+    }
+    std::ofstream file(save_path, std::ios::out);
     file << "GameOfLifeUniverse\n";
     file << m_rows << '\n';
     file << m_cols << '\n';
@@ -41,6 +45,9 @@ void Universe::save(const std::filesystem::path& file_path) const {
 }
 
 UniverseFileData Universe::parseFile(const std::filesystem::path& file_path) {
+    if (file_path.extension().string() != ".univ") {
+        throw std::runtime_error(file_path.string() + " is not a .univ file");
+    }
     std::ifstream file(file_path, std::ios::in);
     if (!file.is_open()) {
         throw std::runtime_error("Failed to open universe file");

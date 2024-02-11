@@ -105,11 +105,13 @@ void testSaveLoad() {
     for (const std::pair<int, int>& pos: alive_cells_pos) {
         universe->makeCellAlive(pos.first, pos.second);
     }
-    universe->save("test_universe");
-    auto new_universe = std::make_unique<UnivT>(3, 4);
-    new_universe->load("test_universe"); // TODO delete this file at the end of the test
-    for (const std::pair<int, int>& pos: alive_cells_pos) {
-        ASSERT_TRUE(new_universe->isCellAlive(pos.first, pos.second));
+    for (const std::string& save_path: {"test_universe", "test_universe.univ"}) {
+        universe->save(save_path);
+        auto new_universe = std::make_unique<UnivT>(3, 4);
+        new_universe->load("test_universe.univ"); // TODO delete this file at the end of the test
+        for (const std::pair<int, int>& pos: alive_cells_pos) {
+            ASSERT_TRUE(new_universe->isCellAlive(pos.first, pos.second));
+        }
     }
 }
 
@@ -122,8 +124,8 @@ void testCreateUniverseFromFile() {
     for (const std::pair<int, int>& pos: alive_cells_pos) {
         universe->makeCellAlive(pos.first, pos.second);
     }
-    universe->save("test_universe");// TODO delete this file at the end of the test
-    auto new_universe = std::make_unique<UnivT>("test_universe");
+    universe->save("test_universe.univ");// TODO delete this file at the end of the test
+    auto new_universe = std::make_unique<UnivT>("test_universe.univ");
     ASSERT_EQ(new_universe->rowCount(), 3);
     ASSERT_EQ(new_universe->colCount(), 4);
     for (const std::pair<int, int>& pos: alive_cells_pos) {

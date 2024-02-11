@@ -206,3 +206,41 @@ TEST(SparseUniverseTests, saveAndLoad) {
 TEST(SparseUniverseTests, createFromFile) {
     testCreateUniverseFromFile<SparseUniverse>();
 }
+
+
+// SparseUniverseV2 tests
+TEST(SparseUniverseV2Tests, UniverseStartsDead) {
+    testUniverseStartsDead(std::make_unique<SparseUniverseV2>(3, 4));
+}
+
+TEST(SparseUniverseV2Tests, makeCellAlive) {
+    testMakeCellAlive(std::make_unique<SparseUniverseV2>(1, 1));
+}
+
+TEST(SparseUniverseV2Tests, makeCellDead) {
+    testMakeCellDead(std::make_unique<SparseUniverseV2>(1, 1));
+}
+
+TEST(SparseUniverseV2Tests, cellComesAlive) {
+    testCellComesAlive<SparseUniverseV2>();
+}
+
+TEST(SparseUniverseV2Tests, cellStaysDead) {
+    testCellStaysDead<SparseUniverseV2>();
+}
+
+TEST(SparseUniverseV2Tests, cellDies) {
+    testCellDies<SparseUniverseV2>();
+}
+
+TEST(SparseUniverseV2Tests, cellStaysAlive) {
+    testCellStaysAlive<SparseUniverseV2>();
+}
+
+TEST(SparseUniverseV2Tests, saveAndLoad) {
+    testSaveLoad<SparseUniverseV2>();
+}
+
+TEST(SparseUniverseV2Tests, createFromFile) {
+    testCreateUniverseFromFile<SparseUniverseV2>();
+}

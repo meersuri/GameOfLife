@@ -18,12 +18,17 @@ void seedUniverse(Universe* universe, const std::vector<std::pair<int, int>>& se
 void visualizeUniverse(Universe* universe, size_t time_steps) {
     GridPainter painter(universe->rowCount(), universe->colCount());
     painter.clear();
+    size_t max_row = 0;
+    size_t max_col = 0;
     for (size_t i = 0; i < time_steps; ++i) {
         for (const std::pair<size_t, size_t>& pos: universe->getAliveCellsPos()) {
             painter.paint(pos.first, pos.second, '*', Color::green);
+            max_row = std::max(pos.first, max_row);
+            max_col = std::max(pos.second, max_col);
         }
         universe->advance();
         std::this_thread::sleep_for(100ms);
+        painter.shiftCursor(max_row, max_col); // since clear is from current cursor pos up, track max row col
         painter.clear();
         painter.shiftCursor(0, 0);
     }
@@ -47,7 +52,7 @@ int main(int argc, char** argv) {
     };
     size_t rows = static_cast<size_t>(pow(2, 32));
     size_t cols = static_cast<size_t>(pow(2, 32));
-    std::unique_ptr<Universe> universe = std::make_unique<SparseUniverse>(rows, cols);
+    std::unique_ptr<Universe> universe = std::make_unique<SparseUniverseV2>(rows, cols);
     size_t time_steps = 150;
     if (argc > 1) {
         seedUniverse(universe.get(), pattern_seed.at(argv[1]));

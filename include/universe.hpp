@@ -5,6 +5,7 @@
 #include <vector>
 #include <memory>
 #include <set>
+#include <unordered_map>
 
 class Cell; //forward declare;
 
@@ -65,5 +66,22 @@ class SparseUniverse: public Universe {
         std::set<std::unique_ptr<Cell>>::iterator findAliveCellByPos(size_t row, size_t col);
         std::set<std::unique_ptr<Cell>> m_alive_cells;
 };
+
+class SparseUniverseV2: public Universe {
+    public:
+        SparseUniverseV2(size_t rows, size_t cols);
+        SparseUniverseV2(const std::filesystem::path& file_path);
+        void advance() override;
+        bool isCellAlive(size_t row, size_t col) override;
+        void makeCellAlive(size_t row, size_t col) override;
+        void makeCellDead(size_t row, size_t col) override;
+        std::vector<std::pair<size_t, size_t>> getAliveCellsPos() const override;
+        void save(const std::filesystem::path& file_path) const override;
+        void load(const std::filesystem::path& file_path) override;
+    private:
+        std::unordered_map<size_t, std::unique_ptr<Cell>>::iterator findAliveCellByPos(size_t row, size_t col);
+        std::unordered_map<size_t, std::unique_ptr<Cell>> m_alive_cells;
+};
+
 
 #endif

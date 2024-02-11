@@ -308,3 +308,110 @@ void SparseUniverse::load(const std::filesystem::path& file_path) {
         m_alive_cells.insert(std::make_unique<Cell>(row, col, m_cols * row + col, true));
     }
 }
+
+
+SparseUniverseV2::SparseUniverseV2(size_t rows, size_t cols): Universe(rows, cols) {}
+
+SparseUniverseV2::SparseUniverseV2(const std::filesystem::path& file_path): Universe(file_path) {
+    auto fdata = Universe::parseFile(file_path);
+    m_rows = fdata.rows;
+    m_cols = fdata.cols;
+    for (const std::pair<size_t, size_t>& p: fdata.alive_cells_pos) {
+        size_t row = p.first;
+        size_t col = p.second;
+        size_t flat_pos = m_cols * row + col;
+        m_alive_cells[flat_pos] = std::make_unique<Cell>(row, col, flat_pos, true);
+    }
+}
+
+std::unordered_map<size_t, std::unique_ptr<Cell>>::iterator SparseUniverseV2::findAliveCellByPos(size_t row, size_t col) {
+    size_t flat_pos = m_cols * row + col;
+    return m_alive_cells.find(flat_pos);
+}
+
+bool SparseUniverseV2::isCellAlive(size_t row, size_t col) {
+    return findAliveCellByPos(row, col) != m_alive_cells.end();
+}
+
+void SparseUniverseV2::makeCellAlive(size_t row, size_t col) {
+    auto iter = findAliveCellByPos(row, col);
+    if (iter == m_alive_cells.end()) {
+        size_t flat_pos = m_cols * row + col;
+        m_alive_cells[flat_pos] = std::make_unique<Cell>(row, col, flat_pos, true);
+    }
+}
+
+void SparseUniverseV2::makeCellDead(size_t row, size_t col) {
+    auto iter = findAliveCellByPos(row, col);
+    if (iter != m_alive_cells.end()) {
+        m_alive_cells.erase(iter);
+    }
+}
+
+void SparseUniverseV2::advance() {
+    std::map<std::pair<size_t, size_t>, size_t> frontier_hit_count;
+    std::unordered_map<size_t, std::unique_ptr<Cell>> next_alive_cells;
+    for (const auto& [flat_pos, cell]: m_alive_cells) {
+        int64_t row_count = static_cast<int64_t>(m_rows);
+        int64_t col_count = static_cast<int64_t>(m_cols);
+        size_t alive_count = 0;
+        for (int dr = -1; dr < 2; dr++) {
+            for (int dc = -1; dc < 2; dc++) {
+                if (dr == 0 && dc == 0) {
+                    continue;
+                }
+                int64_t nei_row = cell->row() + dr;
+                int64_t nei_col = cell->col() + dc;
+                if (nei_row < 0 || nei_row >= row_count || nei_col < 0 || nei_col >= col_count) {
+                    continue;
+                }
+                if (findAliveCellByPos(nei_row, nei_col) == m_alive_cells.end()) {
+                    frontier_hit_count[{nei_row, nei_col}]++;
+                }
+                else {
+                    alive_count++;
+                }
+            }
+        }
+        if (alive_count == 2 || alive_count == 3) {
+            auto cell_copy = std::make_unique<Cell>(cell->row(), cell->col(), cell->flatPos(), true);
+            next_alive_cells[cell->flatPos()] = std::move(cell_copy);
+        }
+    }
+    for (const auto& [pos, count]: frontier_hit_count) {
+        if (count != 3) {
+            continue;
+        }
+        size_t row = pos.first;
+        size_t col = pos.second;
+        size_t flat_pos = m_cols * row + col;
+        next_alive_cells[flat_pos] = std::make_unique<Cell>(row, col, flat_pos, true);
+    }
+    std::swap(m_alive_cells, next_alive_cells);
+}
+
+std::vector<std::pair<size_t, size_t>> SparseUniverseV2::getAliveCellsPos() const {
+    std::vector<std::pair<size_t, size_t>> alive_pos;
+    for (const auto& [flat_pos, cell]: m_alive_cells) {
+        alive_pos.push_back({cell->row(), cell->col()});
+    }
+    return alive_pos;
+}
+
+void SparseUniverseV2::save(const std::filesystem::path& file_path) const {
+    Universe::save(file_path);
+}
+
+void SparseUniverseV2::load(const std::filesystem::path& file_path) {
+    m_alive_cells.clear();
+    auto fdata = Universe::parseFile(file_path);
+    if (fdata.rows != m_rows || fdata.cols != m_cols) {
+        throw std::runtime_error("Cannot load a universe with a mismatched size");
+    }
+    for (const std::pair<size_t, size_t>& p: fdata.alive_cells_pos) {
+        size_t row = p.first;
+        size_t col = p.second;
+        size_t flat_pos = m_cols * row + col;
+        m_alive_cells[flat_pos] = std::make_unique<Cell>(row, col, flat_pos, true);
+    }
+}

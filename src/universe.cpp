@@ -22,6 +22,8 @@ Universe::Universe(size_t rows, size_t cols): m_rows(rows), m_cols(cols) {
     }
 }
 
+Universe::Universe(const std::filesystem::path& file_path) {}
+
 void Universe::save(const std::filesystem::path& file_path) const {
     std::ofstream file(file_path, std::ios::out);
     file << "GameOfLifeUniverse\n";
@@ -60,20 +62,32 @@ UniverseFileData Universe::parseFile(const std::filesystem::path& file_path) {
         size_t row = std::stoi(pos.substr(0, n));
         size_t col = std::stoi(pos.substr(n + 1, pos.size() - n - 1));
         alive_cells_pos.push_back({row, col});
-        std::cout << row << ',' << col << '\n';
     }
     file.close();
     return {rows, cols, alive_cells_pos}; // TODO will this move or copy?
 }
 
-
 DenseUniverse::DenseUniverse(size_t rows, size_t cols): Universe(rows, cols) {
-    for (size_t row = 0; row < rows; ++row) {
+    createCells();
+}
+
+void DenseUniverse::createCells() {
+    for (size_t row = 0; row < m_rows; ++row) {
         std::vector<std::unique_ptr<Cell>> cell_row;
-        for (size_t col = 0; col < cols; ++col) {
+        for (size_t col = 0; col < m_cols; ++col) {
             cell_row.push_back(std::make_unique<Cell>(row, col, m_cols * row + col, false));
         }
         m_cell_grid.push_back(std::move(cell_row));
+    }
+}
+
+DenseUniverse::DenseUniverse(const std::filesystem::path& file_path): Universe(file_path) {
+    auto fdata = Universe::parseFile(file_path);
+    m_rows = fdata.rows;
+    m_cols = fdata.cols;
+    createCells();
+    for (const std::pair<size_t, size_t>& p: fdata.alive_cells_pos) {
+        m_cell_grid[p.first][p.second]->makeAlive();
     }
 }
 
@@ -175,6 +189,17 @@ void DenseUniverse::load(const std::filesystem::path& file_path) {
 }
 
 SparseUniverse::SparseUniverse(size_t rows, size_t cols): Universe(rows, cols) {}
+
+SparseUniverse::SparseUniverse(const std::filesystem::path& file_path): Universe(file_path) {
+    auto fdata = Universe::parseFile(file_path);
+    m_rows = fdata.rows;
+    m_cols = fdata.cols;
+    for (const std::pair<size_t, size_t>& p: fdata.alive_cells_pos) {
+        size_t row = p.first;
+        size_t col = p.second;
+        m_alive_cells.insert(std::make_unique<Cell>(row, col, m_cols * row + col, true));
+    }
+}
 
 std::set<std::unique_ptr<Cell>>::iterator SparseUniverse::findAliveCellByPos(size_t row, size_t col) {
     size_t target = m_cols * row + col;

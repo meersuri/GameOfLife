@@ -113,6 +113,24 @@ void testSaveLoad() {
     }
 }
 
+template <typename UnivT>
+void testCreateUniverseFromFile() {
+    std::vector<std::pair<size_t, size_t>> alive_cells_pos = {
+        {{0, 1}, {2, 2}, {2, 0}, {1, 3}, {2, 3}, {1, 1}}
+    };
+    auto universe = std::make_unique<UnivT>(3, 4);
+    for (const std::pair<int, int>& pos: alive_cells_pos) {
+        universe->makeCellAlive(pos.first, pos.second);
+    }
+    universe->save("test_universe");// TODO delete this file at the end of the test
+    auto new_universe = std::make_unique<UnivT>("test_universe");
+    ASSERT_EQ(new_universe->rowCount(), 3);
+    ASSERT_EQ(new_universe->colCount(), 4);
+    for (const std::pair<int, int>& pos: alive_cells_pos) {
+        ASSERT_TRUE(new_universe->isCellAlive(pos.first, pos.second));
+    }
+}
+
 // DenseUniverse tests
 TEST(DenseUniverseTests, UniverseStartsDead) {
     testUniverseStartsDead(std::make_unique<DenseUniverse>(3, 4));
@@ -146,6 +164,10 @@ TEST(DenseUniverseTests, saveAndLoad) {
     testSaveLoad<DenseUniverse>();
 }
 
+TEST(DenseUniverseTests, createFromFile) {
+    testCreateUniverseFromFile<DenseUniverse>();
+}
+
 // SparseUniverse tests
 TEST(SparseUniverseTests, UniverseStartsDead) {
     testUniverseStartsDead(std::make_unique<SparseUniverse>(3, 4));
@@ -177,4 +199,8 @@ TEST(SparseUniverseTests, cellStaysAlive) {
 
 TEST(SparseUniverseTests, saveAndLoad) {
     testSaveLoad<SparseUniverse>();
+}
+
+TEST(SparseUniverseTests, createFromFile) {
+    testCreateUniverseFromFile<SparseUniverse>();
 }

@@ -14,6 +14,7 @@ struct UniverseFileData;
 class Universe {
     public:
         Universe(size_t rows, size_t cols);
+        Universe(const std::filesystem::path& file_path);
         virtual void advance() = 0;
         virtual bool isCellAlive(size_t row, size_t col) = 0;
         virtual void makeCellAlive(size_t row, size_t col) = 0;
@@ -34,6 +35,7 @@ class Universe {
 class DenseUniverse: public Universe {
     public:
         DenseUniverse(size_t rows, size_t cols);
+        DenseUniverse(const std::filesystem::path& file_path);
         void advance() override;
         bool isCellAlive(size_t row, size_t col) override;
         void makeCellAlive(size_t row, size_t col) override;
@@ -42,6 +44,7 @@ class DenseUniverse: public Universe {
         void save(const std::filesystem::path& file_path) const override;
         void load(const std::filesystem::path& file_path) override;
     private:
+        void createCells();
         std::vector<Cell*> getNeighbors(Cell* cell);
         std::vector<std::vector<std::unique_ptr<Cell>>> m_cell_grid;
 };
@@ -50,6 +53,7 @@ class DenseUniverse: public Universe {
 class SparseUniverse: public Universe {
     public:
         SparseUniverse(size_t rows, size_t cols);
+        SparseUniverse(const std::filesystem::path& file_path);
         void advance() override;
         bool isCellAlive(size_t row, size_t col) override;
         void makeCellAlive(size_t row, size_t col) override;

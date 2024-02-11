@@ -243,7 +243,7 @@ void SparseUniverse::advance() {
     // frontier: cells that are 8-connected adjacent to alive cells
     // only the frontier cells can come alive in the next generation
     // track how many alive neighbors each frontier cell has
-    std::map<std::pair<int, int>, size_t> frontier_hit_count;
+    std::unordered_map<size_t, size_t> frontier_hit_count;
     std::set<std::unique_ptr<Cell>> next_alive_cells;
     for (const std::unique_ptr<Cell>& cell: m_alive_cells) {
         int64_t row_count = static_cast<int64_t>(m_rows);
@@ -260,7 +260,7 @@ void SparseUniverse::advance() {
                     continue;
                 }
                 if (findAliveCellByPos(nei_row, nei_col) == m_alive_cells.end()) {
-                    frontier_hit_count[{nei_row, nei_col}]++;
+                    frontier_hit_count[{m_cols * nei_row + nei_col}]++;
                 }
                 else {
                     alive_count++;
@@ -272,13 +272,12 @@ void SparseUniverse::advance() {
             next_alive_cells.insert(std::move(cell_copy));
         }
     }
-    for (const auto& [pos, alive_count]: frontier_hit_count) {
+    for (const auto& [flat_pos, alive_count]: frontier_hit_count) {
         if (alive_count != 3) {
             continue;
         }
-        size_t row = pos.first;
-        size_t col = pos.second;
-        size_t flat_pos = m_cols * row + col;
+        size_t row = flat_pos / m_cols;
+        size_t col = flat_pos % m_cols;
         next_alive_cells.insert(std::make_unique<Cell>(row, col, flat_pos, true));
     }
     std::swap(m_alive_cells, next_alive_cells);
@@ -349,7 +348,7 @@ void SparseUniverseV2::makeCellDead(size_t row, size_t col) {
 }
 
 void SparseUniverseV2::advance() {
-    std::map<std::pair<size_t, size_t>, size_t> frontier_hit_count;
+    std::unordered_map<size_t, size_t> frontier_hit_count;
     std::unordered_map<size_t, std::unique_ptr<Cell>> next_alive_cells;
     for (const auto& [flat_pos, cell]: m_alive_cells) {
         int64_t row_count = static_cast<int64_t>(m_rows);
@@ -366,7 +365,7 @@ void SparseUniverseV2::advance() {
                     continue;
                 }
                 if (findAliveCellByPos(nei_row, nei_col) == m_alive_cells.end()) {
-                    frontier_hit_count[{nei_row, nei_col}]++;
+                    frontier_hit_count[{m_cols * nei_row + nei_col}]++;
                 }
                 else {
                     alive_count++;
@@ -378,13 +377,12 @@ void SparseUniverseV2::advance() {
             next_alive_cells[cell->flatPos()] = std::move(cell_copy);
         }
     }
-    for (const auto& [pos, count]: frontier_hit_count) {
+    for (const auto& [flat_pos, count]: frontier_hit_count) {
         if (count != 3) {
             continue;
         }
-        size_t row = pos.first;
-        size_t col = pos.second;
-        size_t flat_pos = m_cols * row + col;
+        size_t row = flat_pos / m_cols;
+        size_t col = flat_pos % m_cols;
         next_alive_cells[flat_pos] = std::make_unique<Cell>(row, col, flat_pos, true);
     }
     std::swap(m_alive_cells, next_alive_cells);

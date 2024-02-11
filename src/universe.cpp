@@ -3,11 +3,17 @@
 #include <iostream>
 #include <algorithm>
 #include <map>
+#include <cmath>
 
 #include "universe.hpp"
 #include "cell.hpp"
 
-Universe::Universe(size_t rows, size_t cols): m_rows(rows), m_cols(cols) {}
+Universe::Universe(size_t rows, size_t cols): m_rows(rows), m_cols(cols) {
+    size_t max_dim = static_cast<size_t>(pow(2, 63)) - 2;
+    if (rows > max_dim || cols > max_dim) {
+        throw std::runtime_error("Universe cannot have rows/columns greater than 2^63 - 2");
+    }
+}
 
 DenseUniverse::DenseUniverse(size_t rows, size_t cols): Universe(rows, cols) {
     for (size_t row = 0; row < rows; ++row) {
@@ -21,15 +27,15 @@ DenseUniverse::DenseUniverse(size_t rows, size_t cols): Universe(rows, cols) {
 
 std::vector<Cell*> DenseUniverse::getNeighbors(Cell* cell) {
     std::vector<Cell*> neighbors;
-    int row_count = static_cast<int>(m_rows);
-    int col_count = static_cast<int>(m_cols);
+    int64_t row_count = static_cast<int64_t>(m_rows);
+    int64_t col_count = static_cast<int64_t>(m_cols);
     for (int dr = -1; dr < 2; dr++) {
         for (int dc = -1; dc < 2; dc++) {
             if (dr == 0 && dc == 0) {
                 continue;
             }
-            int nei_row = cell->row() + dr;
-            int nei_col = cell->col() + dc;
+            int64_t nei_row = cell->row() + dr;
+            int64_t nei_col = cell->col() + dc;
             if (nei_row < 0 || nei_row >= row_count || nei_col < 0 || nei_col >= col_count) {
                 continue;
             }
@@ -138,16 +144,16 @@ void SparseUniverse::advance() {
     std::map<std::pair<int, int>, size_t> frontier_hit_count;
     std::set<std::unique_ptr<Cell>> next_alive_cells;
     for (const std::unique_ptr<Cell>& cell: m_alive_cells) {
-        int row_count = static_cast<int>(m_rows);
-        int col_count = static_cast<int>(m_cols);
+        int64_t row_count = static_cast<int64_t>(m_rows);
+        int64_t col_count = static_cast<int64_t>(m_cols);
         size_t alive_count = 0;
         for (int dr = -1; dr < 2; dr++) {
             for (int dc = -1; dc < 2; dc++) {
                 if (dr == 0 && dc == 0) {
                     continue;
                 }
-                int nei_row = cell->row() + dr;
-                int nei_col = cell->col() + dc;
+                int64_t nei_row = cell->row() + dr;
+                int64_t nei_col = cell->col() + dc;
                 if (nei_row < 0 || nei_row >= row_count || nei_col < 0 || nei_col >= col_count) {
                     continue;
                 }

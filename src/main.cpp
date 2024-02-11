@@ -45,8 +45,8 @@ int main(int argc, char** argv) {
                           }
         }
     };
-    size_t rows = static_cast<size_t>(pow(2, 30));
-    size_t cols = static_cast<size_t>(pow(2, 30));
+    size_t rows = static_cast<size_t>(pow(2, 32));
+    size_t cols = static_cast<size_t>(pow(2, 32));
     std::unique_ptr<Universe> universe = std::make_unique<SparseUniverse>(rows, cols);
     size_t time_steps = 150;
     if (argc > 1) {

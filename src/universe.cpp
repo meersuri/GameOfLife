@@ -16,9 +16,9 @@ struct UniverseFileData {
 };
 
 Universe::Universe(size_t rows, size_t cols): m_rows(rows), m_cols(cols) {
-    size_t max_dim = static_cast<size_t>(pow(2, 63)) - 2;
+    size_t max_dim = static_cast<size_t>(pow(2, 32));
     if (rows > max_dim || cols > max_dim) {
-        throw std::runtime_error("Universe cannot have rows/columns greater than 2^63 - 2");
+        throw std::runtime_error("Universe cannot have rows/columns greater than 2^32");
     }
 }
 

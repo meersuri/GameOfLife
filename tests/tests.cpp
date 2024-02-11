@@ -22,8 +22,9 @@ void testMakeCellDead(std::unique_ptr<Universe>&& universe) {
     ASSERT_FALSE(universe->isCellAlive(0, 0));
 }
 
+// 8 neighbors: 8C3 combinations
 template <typename UnivT>
-void testCellComesAlive() {
+void testNonEdgeCellComesAlive() {
     std::vector<std::vector<std::pair<int, int>>> alive_neighbors = {
         {{0, 0}, {2, 2}, {2, 0}},
         {{1, 0}, {2, 1}, {1, 2}},
@@ -40,8 +41,43 @@ void testCellComesAlive() {
     }
 }
 
+// 5 neighbors: 5C3 combinations
 template <typename UnivT>
-void testCellStaysDead() {
+void testEdgeCellComesAlive() {
+    std::vector<std::vector<std::pair<int, int>>> alive_neighbors = {
+        {{0, 0}, {2, 0}, {1, 1}},
+        {{0, 1}, {2, 1}, {1, 1}},
+        {{0, 1}, {1, 1}, {2, 1}},
+        {{2, 0}, {2, 1}, {1, 1}}
+    };
+    for (const std::vector<std::pair<int, int>>& nei: alive_neighbors) {
+        auto universe = std::make_unique<UnivT>(3, 3);
+        for (const std::pair<int, int>& pos: nei) {
+            universe->makeCellAlive(pos.first, pos.second);
+        }
+        universe->advance();
+        ASSERT_TRUE(universe->isCellAlive(1, 0));
+    }
+}
+
+// 3 neighbors: 1 combination
+template <typename UnivT>
+void testCornerCellComesAlive() {
+    std::vector<std::vector<std::pair<int, int>>> alive_neighbors = {
+        {{1, 0}, {1, 1}, {0, 1}},
+    };
+    for (const std::vector<std::pair<int, int>>& nei: alive_neighbors) {
+        auto universe = std::make_unique<UnivT>(3, 3);
+        for (const std::pair<int, int>& pos: nei) {
+            universe->makeCellAlive(pos.first, pos.second);
+        }
+        universe->advance();
+        ASSERT_TRUE(universe->isCellAlive(0, 0));
+    }
+}
+
+template <typename UnivT>
+void testNonEdgeCellStaysDead() {
     std::vector<std::vector<std::pair<int, int>>> alive_neighbors = {
         {{0, 0}, {2, 2}, {2, 0}, {2, 1}},
         {{1, 0}, {2, 1}},
@@ -59,12 +95,51 @@ void testCellStaysDead() {
 }
 
 template <typename UnivT>
-void testCellDies() {
+void testEdgeCellStaysDead() {
+    std::vector<std::vector<std::pair<int, int>>> alive_neighbors = {
+        {{0, 0}, {0, 2}, {1, 1}, {1, 2}},
+        {{0, 0}, {1, 1}},
+        {{0, 2}},
+        {{0, 0}, {0, 2}, {1, 0}, {1, 1}, {1, 2}}
+    };
+    for (const std::vector<std::pair<int, int>>& nei: alive_neighbors) {
+        auto universe = std::make_unique<UnivT>(3, 3);
+        for (const std::pair<int, int>& pos: nei) {
+            universe->makeCellAlive(pos.first, pos.second);
+        }
+        universe->advance();
+        ASSERT_FALSE(universe->isCellAlive(0, 1));
+    }
+}
+
+template <typename UnivT>
+void testCornerCellStaysDead() {
+    std::vector<std::vector<std::pair<int, int>>> alive_neighbors = {
+        {{1, 1}, {1, 0}},
+        {{0, 1}, {1, 2}},
+        {{0, 1}, {1, 1}},
+        {{0, 1}},
+        {{1, 2}}
+    };
+    for (const std::vector<std::pair<int, int>>& nei: alive_neighbors) {
+        auto universe = std::make_unique<UnivT>(3, 3);
+        for (const std::pair<int, int>& pos: nei) {
+            universe->makeCellAlive(pos.first, pos.second);
+        }
+        universe->advance();
+        ASSERT_FALSE(universe->isCellAlive(0, 2));
+    }
+}
+
+template <typename UnivT>
+void testNonEdgeCellDies() {
     std::vector<std::vector<std::pair<int, int>>> alive_neighbors = {
         {{0, 0}, {2, 2}, {2, 0}, {2, 1}},
         {{0, 0}},
         {{2, 2}},
-        {{1, 0}, {1, 2}, {0, 1}, {2, 2}, {0, 0}}
+        {},
+        {{1, 0}, {1, 2}, {0, 1}, {2, 2}, {0, 0}},
+        {{1, 0}, {1, 2}, {0, 1}, {2, 2}, {0, 0}, {2, 1}}
     };
     for (const std::vector<std::pair<int, int>>& nei: alive_neighbors) {
         auto universe = std::make_unique<UnivT>(3, 3);
@@ -78,7 +153,46 @@ void testCellDies() {
 }
 
 template <typename UnivT>
-void testCellStaysAlive() {
+void testEdgeCellDies() {
+    std::vector<std::vector<std::pair<int, int>>> alive_neighbors = {
+        {{1, 0}, {2, 2}, {2, 0}, {1, 2}},
+        {{1, 0}},
+        {{2, 2}},
+        {},
+        {{1, 1}, {2, 0}, {1, 0}, {2, 2}, {1, 2}}
+    };
+    for (const std::vector<std::pair<int, int>>& nei: alive_neighbors) {
+        auto universe = std::make_unique<UnivT>(3, 3);
+        for (const std::pair<int, int>& pos: nei) {
+            universe->makeCellAlive(pos.first, pos.second);
+        }
+        universe->makeCellAlive(2, 1);
+        universe->advance();
+        ASSERT_FALSE(universe->isCellAlive(2, 1));
+    }
+}
+
+template <typename UnivT>
+void testCornerCellDies() {
+    std::vector<std::vector<std::pair<int, int>>> alive_neighbors = {
+        {{1, 1}},
+        {{0, 1}},
+        {{1, 2}},
+        {}
+    };
+    for (const std::vector<std::pair<int, int>>& nei: alive_neighbors) {
+        auto universe = std::make_unique<UnivT>(3, 3);
+        for (const std::pair<int, int>& pos: nei) {
+            universe->makeCellAlive(pos.first, pos.second);
+        }
+        universe->makeCellAlive(0, 2);
+        universe->advance();
+        ASSERT_FALSE(universe->isCellAlive(0, 2));
+    }
+}
+
+template <typename UnivT>
+void testNonEdgeCellStaysAlive() {
     std::vector<std::vector<std::pair<int, int>>> alive_neighbors = {
         {{0, 1}, {2, 2}, {2, 0}},
         {{0, 0}, {0, 1}, {2, 1}},
@@ -93,6 +207,44 @@ void testCellStaysAlive() {
         universe->makeCellAlive(1, 1);
         universe->advance();
         ASSERT_TRUE(universe->isCellAlive(1, 1));
+    }
+}
+
+template <typename UnivT>
+void testEdgeCellStaysAlive() {
+    std::vector<std::vector<std::pair<int, int>>> alive_neighbors = {
+        {{1, 1}, {0, 2}, {2, 2}},
+        {{0, 1}, {1, 1}, {2, 1}},
+        {{2, 2}, {0, 1}},
+        {{1, 1}, {0, 2}}
+    };
+    for (const std::vector<std::pair<int, int>>& nei: alive_neighbors) {
+        auto universe = std::make_unique<UnivT>(3, 3);
+        for (const std::pair<int, int>& pos: nei) {
+            universe->makeCellAlive(pos.first, pos.second);
+        }
+        universe->makeCellAlive(1, 2);
+        universe->advance();
+        ASSERT_TRUE(universe->isCellAlive(1, 2));
+    }
+}
+
+template <typename UnivT>
+void testCornerCellStaysAlive() {
+    std::vector<std::vector<std::pair<int, int>>> alive_neighbors = {
+        {{1, 2}, {2, 1}, {1, 1}},
+        {{2, 1}, {1, 1}},
+        {{1, 2}, {1, 1}},
+        {{1, 2}, {2, 1}}
+    };
+    for (const std::vector<std::pair<int, int>>& nei: alive_neighbors) {
+        auto universe = std::make_unique<UnivT>(3, 3);
+        for (const std::pair<int, int>& pos: nei) {
+            universe->makeCellAlive(pos.first, pos.second);
+        }
+        universe->makeCellAlive(2, 2);
+        universe->advance();
+        ASSERT_TRUE(universe->isCellAlive(2, 2));
     }
 }
 
@@ -147,19 +299,27 @@ TEST(DenseUniverseTests, makeCellDead) {
 }
 
 TEST(DenseUniverseTests, cellComesAlive) {
-    testCellComesAlive<DenseUniverse>();
+    testNonEdgeCellComesAlive<DenseUniverse>();
+    testEdgeCellComesAlive<DenseUniverse>();
+    testCornerCellComesAlive<DenseUniverse>();
 }
 
 TEST(DenseUniverseTests, cellStaysDead) {
-    testCellStaysDead<DenseUniverse>();
+    testNonEdgeCellStaysDead<DenseUniverse>();
+    testEdgeCellStaysDead<DenseUniverse>();
+    testCornerCellStaysDead<DenseUniverse>();
 }
 
 TEST(DenseUniverseTests, cellDies) {
-    testCellDies<DenseUniverse>();
+    testNonEdgeCellDies<DenseUniverse>();
+    testEdgeCellDies<DenseUniverse>();
+    testCornerCellDies<DenseUniverse>();
 }
 
 TEST(DenseUniverseTests, cellStaysAlive) {
-    testCellStaysAlive<DenseUniverse>();
+    testNonEdgeCellStaysAlive<DenseUniverse>();
+    testEdgeCellStaysAlive<DenseUniverse>();
+    testCornerCellStaysAlive<DenseUniverse>();
 }
 
 TEST(DenseUniverseTests, saveAndLoad) {
@@ -184,19 +344,27 @@ TEST(SparseUniverseTests, makeCellDead) {
 }
 
 TEST(SparseUniverseTests, cellComesAlive) {
-    testCellComesAlive<SparseUniverse>();
+    testNonEdgeCellComesAlive<SparseUniverse>();
+    testEdgeCellComesAlive<SparseUniverse>();
+    testCornerCellComesAlive<SparseUniverse>();
 }
 
 TEST(SparseUniverseTests, cellStaysDead) {
-    testCellStaysDead<SparseUniverse>();
+    testNonEdgeCellStaysDead<SparseUniverse>();
+    testEdgeCellStaysDead<SparseUniverse>();
+    testCornerCellStaysDead<SparseUniverse>();
 }
 
 TEST(SparseUniverseTests, cellDies) {
-    testCellDies<SparseUniverse>();
+    testNonEdgeCellDies<SparseUniverse>();
+    testEdgeCellDies<SparseUniverse>();
+    testCornerCellDies<SparseUniverse>();
 }
 
 TEST(SparseUniverseTests, cellStaysAlive) {
-    testCellStaysAlive<SparseUniverse>();
+    testNonEdgeCellStaysAlive<SparseUniverse>();
+    testEdgeCellStaysAlive<SparseUniverse>();
+    testCornerCellStaysAlive<SparseUniverse>();
 }
 
 TEST(SparseUniverseTests, saveAndLoad) {
@@ -222,19 +390,27 @@ TEST(SparseUniverseV2Tests, makeCellDead) {
 }
 
 TEST(SparseUniverseV2Tests, cellComesAlive) {
-    testCellComesAlive<SparseUniverseV2>();
+    testNonEdgeCellComesAlive<SparseUniverseV2>();
+    testEdgeCellComesAlive<SparseUniverseV2>();
+    testCornerCellComesAlive<SparseUniverseV2>();
 }
 
 TEST(SparseUniverseV2Tests, cellStaysDead) {
-    testCellStaysDead<SparseUniverseV2>();
+    testNonEdgeCellStaysDead<SparseUniverseV2>();
+    testEdgeCellStaysDead<SparseUniverseV2>();
+    testCornerCellStaysDead<SparseUniverseV2>();
 }
 
 TEST(SparseUniverseV2Tests, cellDies) {
-    testCellDies<SparseUniverseV2>();
+    testNonEdgeCellDies<SparseUniverseV2>();
+    testEdgeCellDies<SparseUniverseV2>();
+    testCornerCellDies<SparseUniverseV2>();
 }
 
 TEST(SparseUniverseV2Tests, cellStaysAlive) {
-    testCellStaysAlive<SparseUniverseV2>();
+    testNonEdgeCellStaysAlive<SparseUniverseV2>();
+    testEdgeCellStaysAlive<SparseUniverseV2>();
+    testCornerCellStaysAlive<SparseUniverseV2>();
 }
 
 TEST(SparseUniverseV2Tests, saveAndLoad) {

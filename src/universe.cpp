@@ -272,14 +272,14 @@ void SparseUniverse::advance() {
             next_alive_cells.insert(std::move(cell_copy));
         }
     }
-    for (auto& p: frontier_hit_count) {
-        if (p.second != 3) {
+    for (const auto& [pos, alive_count]: frontier_hit_count) {
+        if (alive_count != 3) {
             continue;
         }
-        size_t row = p.first.first;
-        size_t col = p.first.second;
-        auto new_cell = std::make_unique<Cell>(p.first.first, p.first.second, m_cols * row + col, true);
-        next_alive_cells.insert(std::move(new_cell));
+        size_t row = pos.first;
+        size_t col = pos.second;
+        size_t flat_pos = m_cols * row + col;
+        next_alive_cells.insert(std::make_unique<Cell>(row, col, flat_pos, true));
     }
     std::swap(m_alive_cells, next_alive_cells);
 }

@@ -18,9 +18,9 @@ void seedUniverse(Universe* universe, const std::vector<std::pair<int, int>>& se
 void visualizeUniverse(Universe* universe, size_t time_steps) {
     GridPainter painter(universe->rowCount(), universe->colCount());
     painter.clear();
-    size_t max_row = 0;
-    size_t max_col = 0;
     for (size_t i = 0; i < time_steps; ++i) {
+        size_t max_row = 0;
+        size_t max_col = 0;
         for (const std::pair<size_t, size_t>& pos: universe->getAliveCellsPos()) {
             painter.paint(pos.first, pos.second, '*', Color::green);
             max_row = std::max(pos.first, max_row);

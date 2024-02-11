@@ -4,10 +4,7 @@
 #include <vector>
 #include <cstddef>
 
-class DenseUniverse; //fwd declare
-
 class Cell {
-    friend class DenseUniverse;
     public:
         Cell(size_t row, size_t col, size_t flat_pos, bool alive=false);
         bool isAlive() const;

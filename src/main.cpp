@@ -57,5 +57,6 @@ int main(int argc, char** argv) {
         seedUniverse(universe.get(), pattern_seed["gosper_glider"]);
     }
     visualizeUniverse(universe.get(), time_steps);
+    universe->save("universe");
     return 0;
 }

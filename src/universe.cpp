@@ -4,9 +4,16 @@
 #include <algorithm>
 #include <map>
 #include <cmath>
+#include <fstream>
 
 #include "universe.hpp"
 #include "cell.hpp"
+
+struct UniverseFileData {
+    size_t rows;
+    size_t cols;
+    std::vector<std::pair<size_t, size_t>> alive_cells_pos;
+};
 
 Universe::Universe(size_t rows, size_t cols): m_rows(rows), m_cols(cols) {
     size_t max_dim = static_cast<size_t>(pow(2, 63)) - 2;
@@ -14,6 +21,51 @@ Universe::Universe(size_t rows, size_t cols): m_rows(rows), m_cols(cols) {
         throw std::runtime_error("Universe cannot have rows/columns greater than 2^63 - 2");
     }
 }
+
+void Universe::save(const std::filesystem::path& file_path) const {
+    std::ofstream file(file_path, std::ios::out);
+    file << "GameOfLifeUniverse\n";
+    file << m_rows << '\n';
+    file << m_cols << '\n';
+    if (!file.is_open()) {
+        throw std::runtime_error("Failed to open output file");
+    }
+    const auto& alive_cells = getAliveCellsPos();
+    file << alive_cells.size() << '\n';
+    for (const std::pair<size_t, size_t>& p: alive_cells) {
+        file << p.first << ',' << p.second << '\n';
+    }
+    file.close();
+}
+
+UniverseFileData Universe::parseFile(const std::filesystem::path& file_path) {
+    std::ifstream file(file_path, std::ios::in);
+    if (!file.is_open()) {
+        throw std::runtime_error("Failed to open universe file");
+    }
+    std::string header;
+    file >> header;
+    if (header != "GameOfLifeUniverse") {
+        throw std::runtime_error("Not a valid universe file");
+    }
+    size_t rows, cols;
+    file >> rows >> cols;
+    size_t alive_count;
+    file >> alive_count;
+    std::vector<std::pair<size_t, size_t>> alive_cells_pos;
+    for (size_t i = 0; i < alive_count; ++i) {
+        std::string pos;
+        file >> pos;
+        auto n = pos.find(",");
+        size_t row = std::stoi(pos.substr(0, n));
+        size_t col = std::stoi(pos.substr(n + 1, pos.size() - n - 1));
+        alive_cells_pos.push_back({row, col});
+        std::cout << row << ',' << col << '\n';
+    }
+    file.close();
+    return {rows, cols, alive_cells_pos}; // TODO will this move or copy?
+}
+
 
 DenseUniverse::DenseUniverse(size_t rows, size_t cols): Universe(rows, cols) {
     for (size_t row = 0; row < rows; ++row) {
@@ -91,7 +143,7 @@ void DenseUniverse::advance() {
     std::swap(m_cell_grid, grid_copy);
 }
 
-std::vector<std::pair<size_t, size_t>> DenseUniverse::getAliveCellsPos() {
+std::vector<std::pair<size_t, size_t>> DenseUniverse::getAliveCellsPos() const {
     std::vector<std::pair<size_t, size_t>> alive_pos;
     for (size_t row = 0; row < m_rows; row++) {
         for (size_t col = 0; col < m_cols; col++) {
@@ -103,6 +155,24 @@ std::vector<std::pair<size_t, size_t>> DenseUniverse::getAliveCellsPos() {
     return alive_pos;
 }
 
+void DenseUniverse::save(const std::filesystem::path& file_path) const {
+    Universe::save(file_path);
+}
+
+void DenseUniverse::load(const std::filesystem::path& file_path) {
+    for (size_t row = 0; row < m_rows; ++row) {
+        for (size_t col = 0; col < m_cols; ++col) {
+            m_cell_grid[row][col]->makeDead();
+        }
+    }
+    auto fdata = Universe::parseFile(file_path);
+    if (fdata.rows != m_rows || fdata.cols != m_cols) {
+        throw std::runtime_error("Cannot load a universe with a mismatched size");
+    }
+    for (const std::pair<size_t, size_t>& p: fdata.alive_cells_pos) {
+        m_cell_grid[p.first][p.second]->makeAlive();
+    }
+}
 
 SparseUniverse::SparseUniverse(size_t rows, size_t cols): Universe(rows, cols) {}
 
@@ -182,10 +252,27 @@ void SparseUniverse::advance() {
     std::swap(m_alive_cells, next_alive_cells);
 }
 
-std::vector<std::pair<size_t, size_t>> SparseUniverse::getAliveCellsPos() {
+std::vector<std::pair<size_t, size_t>> SparseUniverse::getAliveCellsPos() const {
     std::vector<std::pair<size_t, size_t>> alive_pos;
     for (const std::unique_ptr<Cell>& cell: m_alive_cells) {
         alive_pos.push_back({cell->row(), cell->col()});
     }
     return alive_pos;
+}
+
+void SparseUniverse::save(const std::filesystem::path& file_path) const {
+    Universe::save(file_path);
+}
+
+void SparseUniverse::load(const std::filesystem::path& file_path) {
+    m_alive_cells.clear();
+    auto fdata = Universe::parseFile(file_path);
+    if (fdata.rows != m_rows || fdata.cols != m_cols) {
+        throw std::runtime_error("Cannot load a universe with a mismatched size");
+    }
+    for (const std::pair<size_t, size_t>& p: fdata.alive_cells_pos) {
+        size_t row = p.first;
+        size_t col = p.second;
+        m_alive_cells.insert(std::make_unique<Cell>(row, col, m_cols * row + col, true));
+    }
 }

@@ -8,6 +8,8 @@
 
 class Cell; //forward declare;
 
+struct UniverseFileData;
+
 // defines the interface for a Universe of Cells
 class Universe {
     public:
@@ -16,11 +18,14 @@ class Universe {
         virtual bool isCellAlive(size_t row, size_t col) = 0;
         virtual void makeCellAlive(size_t row, size_t col) = 0;
         virtual void makeCellDead(size_t row, size_t col) = 0;
-        virtual std::vector<std::pair<size_t, size_t>> getAliveCellsPos() = 0;
+        virtual std::vector<std::pair<size_t, size_t>> getAliveCellsPos() const = 0;
+        virtual void save(const std::filesystem::path& file_path) const;
+        virtual void load(const std::filesystem::path& file_path) = 0;
         size_t rowCount() const { return m_rows; }
         size_t colCount() const { return m_cols; }
         virtual ~Universe() {};
     protected:
+        UniverseFileData parseFile(const std::filesystem::path& file_path);
         size_t m_rows;
         size_t m_cols;
 };
@@ -33,7 +38,9 @@ class DenseUniverse: public Universe {
         bool isCellAlive(size_t row, size_t col) override;
         void makeCellAlive(size_t row, size_t col) override;
         void makeCellDead(size_t row, size_t col) override;
-        std::vector<std::pair<size_t, size_t>> getAliveCellsPos() override;
+        std::vector<std::pair<size_t, size_t>> getAliveCellsPos() const override;
+        void save(const std::filesystem::path& file_path) const override;
+        void load(const std::filesystem::path& file_path) override;
     private:
         std::vector<Cell*> getNeighbors(Cell* cell);
         std::vector<std::vector<std::unique_ptr<Cell>>> m_cell_grid;
@@ -47,7 +54,9 @@ class SparseUniverse: public Universe {
         bool isCellAlive(size_t row, size_t col) override;
         void makeCellAlive(size_t row, size_t col) override;
         void makeCellDead(size_t row, size_t col) override;
-        std::vector<std::pair<size_t, size_t>> getAliveCellsPos() override;
+        std::vector<std::pair<size_t, size_t>> getAliveCellsPos() const override;
+        void save(const std::filesystem::path& file_path) const override;
+        void load(const std::filesystem::path& file_path) override;
     private:
         std::set<std::unique_ptr<Cell>>::iterator findAliveCellByPos(size_t row, size_t col);
         std::set<std::unique_ptr<Cell>> m_alive_cells;

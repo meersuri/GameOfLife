@@ -6,6 +6,7 @@
 #include "universe.hpp"
 #include "cell.hpp"
 #include "painter.hpp"
+#include "animator.hpp"
 
 using namespace std::chrono_literals;
 
@@ -16,23 +17,8 @@ void seedUniverse(Universe* universe, const std::vector<std::pair<int, int>>& se
 }
 
 void visualizeUniverse(Universe* universe, size_t time_steps) {
-    GridPainter painter(universe->rowCount(), universe->colCount());
-    painter.clear();
-    for (size_t i = 0; i < time_steps; ++i) {
-        size_t max_row = 0;
-        size_t max_col = 0;
-        for (const std::pair<size_t, size_t>& pos: universe->getAliveCellsPos()) {
-            painter.paint(pos.first, pos.second, '*', Color::green);
-            max_row = std::max(pos.first, max_row);
-            max_col = std::max(pos.second, max_col);
-        }
-        universe->advance();
-        std::this_thread::sleep_for(100ms);
-        painter.shiftCursor(max_row, max_col); // since clear is from current cursor pos up, track max row col
-        painter.clear();
-        painter.shiftCursor(0, 0);
-    }
-    painter.shiftCursor(universe->rowCount() + 1, 1);
+    std::unique_ptr<Animator> animator = std::make_unique<AutoPanAnimator>(100ms);
+    animator->animate(universe, time_steps);
 }
 
 int main(int argc, char** argv) {
@@ -40,6 +26,22 @@ int main(int argc, char** argv) {
         {"toad", {{2,2}, {2,3}, {2,4}, {3,1}, {3,2}, {3,3}}},
         {"bee_hive", {{2,1}, {1,2}, {1,3}, {2,4}, {3,2}, {3,3}}},
         {"glider", {{2, 1}, {3, 2}, {3, 3}, {2, 3}, {1, 3}}},
+        {"switch_engine", {
+                              {1, 1}, {1, 2}, {1, 3}, {1, 5},
+                              {2, 1}, {3, 4}, {3, 5},
+                              {4, 2}, {4, 3}, {4, 5},
+                              {5, 1}, {5, 3}, {5, 5},
+                          }
+        },
+        {"switch_engine_2", {
+                              {3, 3}, {3, 5},
+                              {4, 2},
+                              {5, 3}, {5, 6},
+                              {6, 5}, {6, 6}, {6, 7},
+                              {4, 15}, {4, 16}, // block
+                              {5, 15}, {5, 16}
+                          }
+        },
         {"gosper_glider", {
                               {5, 1}, {5, 2}, {6, 1}, {6, 2},
                               {3, 13}, {3, 14}, {4, 12}, {4, 16}, {5, 11}, {5, 17}, {6, 11}, {6, 15}, {6, 17}, {6, 18},

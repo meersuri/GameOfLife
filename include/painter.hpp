@@ -7,6 +7,7 @@ enum class Color {
     black = 30,
     red = 31,
     green = 32,
+    yellow = 33,
 };
 
 class GridPainter {

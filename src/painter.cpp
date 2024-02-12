@@ -2,7 +2,7 @@
 
 #include "painter.hpp"
 
-GridPainter::GridPainter(size_t rows, size_t cols): m_rows(rows), m_cols(cols) {
+GridPainter::GridPainter() {
     std::cout << m_esc << "?25l" << std::flush; // hide cursor
 }
 

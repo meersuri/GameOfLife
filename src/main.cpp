@@ -5,7 +5,6 @@
 
 #include "universe.hpp"
 #include "cell.hpp"
-#include "painter.hpp"
 #include "animator.hpp"
 
 using namespace std::chrono_literals;

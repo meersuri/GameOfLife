@@ -13,8 +13,10 @@ enum class Color {
 class GridPainter {
     public:
         GridPainter();
-        void paint(size_t row, size_t col, char cell_char, Color color);
-        void paint(char cell_char, Color color);
+        template <typename T>
+        void paint(size_t row, size_t col, T cell_char, Color color);
+        template <typename T>
+        void paint(T cell_char, Color color);
         void clear();
         void shiftCursor(size_t row, size_t col);
         ~GridPainter();

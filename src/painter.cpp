@@ -18,12 +18,21 @@ void GridPainter::shiftCursor(size_t row, size_t col) { // one based line, col (
     std::cout << m_esc << std::to_string(row) << ";" << std::to_string(col) << "H" << std::flush;
 }
 
-void GridPainter::paint(char cell_char, Color color) {
+template <typename T>
+void GridPainter::paint(T cell_char, Color color) {
     std::string code = m_esc + std::to_string(static_cast<int>(color)) + "m";
     std::cout << code << cell_char << m_reset_style << std::flush;
 }
 
-void GridPainter::paint(size_t row, size_t col, char cell_char, Color color) {
+template <typename T>
+void GridPainter::paint(size_t row, size_t col, T cell_char, Color color) {
     shiftCursor(row, col);
     paint(cell_char, color);
 }
+
+template
+void GridPainter::paint<char>(size_t row, size_t col, char cell_char, Color color);
+
+// for printing multi-byte unicode characters
+template
+void GridPainter::paint<const char*>(size_t row, size_t col, const char* cell_char, Color color);

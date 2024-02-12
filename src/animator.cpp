@@ -31,7 +31,7 @@ void FullViewAnimator::animate(Universe* universe, size_t time_steps) {
         max_row = 0;
         max_col = 0;
         for (const std::pair<size_t, size_t>& pos: universe->getAliveCellsPos()) {
-            m_painter.paint(pos.first + 2, pos.second + 2, '*', Color::green); // add margins
+            m_painter.paint(pos.first + 2, pos.second + 2, "█", Color::green); // add margins
             max_row = std::max(pos.first + 2, max_row);
             max_col = std::max(pos.second + 2, max_col);
         }
@@ -67,7 +67,7 @@ void AutoPanAnimator::animate(Universe* universe, size_t time_steps) {
             max_col = std::max(pos.second, max_col);
         }
         for (const std::pair<size_t, size_t>& pos: universe->getAliveCellsPos()) {
-            m_painter.paint(pos.first - min_row + 2, pos.second - min_col + 2, '*', Color::green); // translate to top left with a margin
+            m_painter.paint(pos.first - min_row + 2, pos.second - min_col + 2, "█", Color::green); // translate to top left with a margin
         }
         printRowOffset(min_row);
         printColOffset(min_col);

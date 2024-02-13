@@ -319,11 +319,11 @@ SparseUniverseV2::SparseUniverseV2(const std::filesystem::path& file_path): Univ
         size_t row = p.first;
         size_t col = p.second;
         size_t flat_pos = m_cols * row + col;
-        m_alive_cells[flat_pos] = std::make_unique<Cell>(row, col, flat_pos, true);
+        m_alive_cells.emplace(flat_pos, Cell(row, col, flat_pos, true));
     }
 }
 
-std::unordered_map<size_t, std::unique_ptr<Cell>>::iterator SparseUniverseV2::findAliveCellByPos(size_t row, size_t col) {
+std::unordered_map<size_t, Cell>::iterator SparseUniverseV2::findAliveCellByPos(size_t row, size_t col) {
     size_t flat_pos = m_cols * row + col;
     return m_alive_cells.find(flat_pos);
 }
@@ -336,7 +336,7 @@ void SparseUniverseV2::makeCellAlive(size_t row, size_t col) {
     auto iter = findAliveCellByPos(row, col);
     if (iter == m_alive_cells.end()) {
         size_t flat_pos = m_cols * row + col;
-        m_alive_cells[flat_pos] = std::make_unique<Cell>(row, col, flat_pos, true);
+        m_alive_cells.emplace(flat_pos, Cell(row, col, flat_pos, true));
     }
 }
 
@@ -349,7 +349,7 @@ void SparseUniverseV2::makeCellDead(size_t row, size_t col) {
 
 void SparseUniverseV2::advance() {
     std::unordered_map<size_t, size_t> frontier_hit_count;
-    std::unordered_map<size_t, std::unique_ptr<Cell>> next_alive_cells;
+    std::unordered_map<size_t, Cell> next_alive_cells;
     for (const auto& [flat_pos, cell]: m_alive_cells) {
         int64_t row_count = static_cast<int64_t>(m_rows);
         int64_t col_count = static_cast<int64_t>(m_cols);
@@ -359,8 +359,8 @@ void SparseUniverseV2::advance() {
                 if (dr == 0 && dc == 0) {
                     continue;
                 }
-                int64_t nei_row = cell->row() + dr;
-                int64_t nei_col = cell->col() + dc;
+                int64_t nei_row = cell.row() + dr;
+                int64_t nei_col = cell.col() + dc;
                 if (nei_row < 0 || nei_row >= row_count || nei_col < 0 || nei_col >= col_count) {
                     continue;
                 }
@@ -373,8 +373,7 @@ void SparseUniverseV2::advance() {
             }
         }
         if (alive_count == 2 || alive_count == 3) {
-            auto cell_copy = std::make_unique<Cell>(cell->row(), cell->col(), cell->flatPos(), true);
-            next_alive_cells[cell->flatPos()] = std::move(cell_copy);
+            next_alive_cells.emplace(cell.flatPos(), Cell(cell));
         }
     }
     for (const auto& [flat_pos, count]: frontier_hit_count) {
@@ -383,7 +382,7 @@ void SparseUniverseV2::advance() {
         }
         size_t row = flat_pos / m_cols;
         size_t col = flat_pos % m_cols;
-        next_alive_cells[flat_pos] = std::make_unique<Cell>(row, col, flat_pos, true);
+        next_alive_cells.emplace(flat_pos, Cell(row, col, flat_pos, true));
     }
     std::swap(m_alive_cells, next_alive_cells);
 }
@@ -391,7 +390,7 @@ void SparseUniverseV2::advance() {
 std::vector<std::pair<size_t, size_t>> SparseUniverseV2::getAliveCellsPos() const {
     std::vector<std::pair<size_t, size_t>> alive_pos;
     for (const auto& [flat_pos, cell]: m_alive_cells) {
-        alive_pos.push_back({cell->row(), cell->col()});
+        alive_pos.push_back({cell.row(), cell.col()});
     }
     return alive_pos;
 }
@@ -410,6 +409,6 @@ void SparseUniverseV2::load(const std::filesystem::path& file_path) {
         size_t row = p.first;
         size_t col = p.second;
         size_t flat_pos = m_cols * row + col;
-        m_alive_cells[flat_pos] = std::make_unique<Cell>(row, col, flat_pos, true);
+        m_alive_cells.emplace(flat_pos, Cell(row, col, flat_pos, true));
     }
 }

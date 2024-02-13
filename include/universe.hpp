@@ -7,7 +7,7 @@
 #include <set>
 #include <unordered_map>
 
-class Cell; //forward declare;
+#include "cell.hpp"
 
 struct UniverseFileData;
 
@@ -79,8 +79,8 @@ class SparseUniverseV2: public Universe {
         void save(const std::filesystem::path& file_path) const override;
         void load(const std::filesystem::path& file_path) override;
     private:
-        std::unordered_map<size_t, std::unique_ptr<Cell>>::iterator findAliveCellByPos(size_t row, size_t col);
-        std::unordered_map<size_t, std::unique_ptr<Cell>> m_alive_cells;
+        std::unordered_map<size_t, Cell>::iterator findAliveCellByPos(size_t row, size_t col);
+        std::unordered_map<size_t, Cell> m_alive_cells;
 };
 
 

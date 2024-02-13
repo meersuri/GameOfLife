@@ -54,7 +54,7 @@ int main(int argc, char** argv) {
     size_t rows = static_cast<size_t>(pow(2, 32));
     size_t cols = static_cast<size_t>(pow(2, 32));
     std::unique_ptr<Universe> universe = std::make_unique<SparseUniverseV2>(rows, cols);
-    size_t time_steps = 150;
+    size_t time_steps = 350;
     if (argc > 1) {
         seedUniverse(universe.get(), pattern_seed.at(argv[1]));
         time_steps = argc > 2 ? std::stoi(argv[2]) : time_steps ;

@@ -14,7 +14,8 @@ class Animator {
     protected:
         void printRowOffset(size_t offset, Color color=Color::yellow);
         void printColOffset(size_t offset, Color color=Color::yellow);
-        void paintMargins(size_t row_count, size_t col_count, size_t thickness, Color color);
+        void paintLeftMargin(size_t row_count, size_t thickness, Color color);
+        void paintTopMargin(size_t col_count, size_t thickness, Color color);
         std::chrono::milliseconds m_refresh_period;
         size_t m_time_steps;
         GridPainter m_painter;

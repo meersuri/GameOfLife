@@ -42,6 +42,7 @@ void FullViewAnimator::animate(Universe* universe, size_t time_steps) {
     size_t margin_thickness = 1;
 
     m_painter.clear();
+    Animator::paintMargins(0, 0, margin_thickness, Color::blue);
     for (size_t i = 0; i < time_steps; ++i) {
         max_row = 0;
         max_col = 0;
@@ -82,7 +83,8 @@ void AutoPanAnimator::animate(Universe* universe, size_t time_steps) {
         max_col = 0;
         min_row = universe->rowCount();
         min_col = universe->colCount();
-        for (const auto& [row, col]: universe->getAliveCellsPos()) {
+        std::vector<std::pair<size_t, size_t>> alive_cells_pos = universe->getAliveCellsPos();
+        for (const auto& [row, col]: alive_cells_pos) {
             min_row = std::min(static_cast<int64_t>(row), min_row); // safe cast: max pos 2**32
             max_row = std::max(row, max_row);
             min_col = std::min(static_cast<int64_t>(col), min_col); // safe cast: max pos 2**32
@@ -90,7 +92,7 @@ void AutoPanAnimator::animate(Universe* universe, size_t time_steps) {
         }
         printRowOffset(min_row);
         printColOffset(min_col);
-        for (const auto& [row, col]: universe->getAliveCellsPos()) {
+        for (const auto& [row, col]: alive_cells_pos) {
             size_t cell_row = row - min_row + margin_thickness;
             size_t cell_col = col - min_col + margin_thickness;
             m_painter.paint(cell_row, cell_col, "█", Color::green); // translate to top left with a margin

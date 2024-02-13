@@ -140,8 +140,8 @@ void CenterAutoPanAnimator::animate(Universe* universe, size_t time_steps) {
     int64_t min_col = universe->colCount();
     size_t row_count = universe->rowCount();
     size_t col_count = universe->colCount();
-    size_t viewport_rows = 30;
-    size_t viewport_cols = 30;
+    size_t viewport_rows = 40;
+    size_t viewport_cols = 40;
 
     m_painter.clear();
     for (size_t i = 0; i < time_steps; ++i) {

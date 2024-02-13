@@ -14,8 +14,8 @@ void GridPainter::clear() {
     std::cout << m_esc << "1J" << std::flush; // clear from cursor to top
 }
 
-void GridPainter::shiftCursor(size_t row, size_t col) { // one based line, col (1, 1) is top left
-    std::cout << m_esc << std::to_string(row) << ";" << std::to_string(col) << "H" << std::flush;
+void GridPainter::shiftCursor(size_t row, size_t col) { // zero based line, col (0, 0) is top left
+    std::cout << m_esc << std::to_string(row + 1) << ";" << std::to_string(col + 1) << "H" << std::flush;
 }
 
 template <typename T>

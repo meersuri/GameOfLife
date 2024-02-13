@@ -16,7 +16,7 @@ void seedUniverse(Universe* universe, const std::vector<std::pair<int, int>>& se
 }
 
 void visualizeUniverse(Universe* universe, size_t time_steps) {
-    std::unique_ptr<Animator> animator = std::make_unique<AutoPanAnimator>(100ms);
+    std::unique_ptr<Animator> animator = std::make_unique<CenterAutoPanAnimator>(100ms);
     animator->animate(universe, time_steps);
 }
 

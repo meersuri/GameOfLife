@@ -47,7 +47,11 @@ class DenseUniverse: public Universe {
     private:
         void createCells();
         std::vector<Cell*> getNeighbors(Cell* cell);
-        std::vector<std::vector<std::unique_ptr<Cell>>> m_cell_grid;
+        std::vector<std::vector<std::unique_ptr<Cell>>>& getCurrentGrid();
+        const std::vector<std::vector<std::unique_ptr<Cell>>>& getCurrentGrid() const;
+        std::vector<std::vector<std::unique_ptr<Cell>>> m_cell_grid_1;
+        std::vector<std::vector<std::unique_ptr<Cell>>> m_cell_grid_2;
+        bool m_grid_1_is_current{true};
 };
 
 // keeps only alive Cells in memory

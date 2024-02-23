@@ -46,11 +46,11 @@ class DenseUniverse: public Universe {
         void load(const std::filesystem::path& file_path) override;
     private:
         void createCells();
-        std::vector<Cell*> getNeighbors(Cell* cell);
-        std::vector<std::vector<std::unique_ptr<Cell>>>& getCurrentGrid();
-        const std::vector<std::vector<std::unique_ptr<Cell>>>& getCurrentGrid() const;
-        std::vector<std::vector<std::unique_ptr<Cell>>> m_cell_grid_1;
-        std::vector<std::vector<std::unique_ptr<Cell>>> m_cell_grid_2;
+        std::vector<Cell*> getNeighbors(const Cell& cell);
+        std::vector<std::vector<Cell>>& getCurrentGrid();
+        const std::vector<std::vector<Cell>>& getCurrentGrid() const;
+        std::vector<std::vector<Cell>> m_cell_grid_1;
+        std::vector<std::vector<Cell>> m_cell_grid_2;
         bool m_grid_1_is_current{true};
 };
 

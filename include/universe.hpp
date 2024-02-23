@@ -28,6 +28,7 @@ class Universe {
         virtual ~Universe() {};
     protected:
         UniverseFileData parseFile(const std::filesystem::path& file_path);
+        std::vector<std::pair<size_t, size_t>> getNeighborsPos(size_t row, size_t col);
         size_t m_rows;
         size_t m_cols;
 };

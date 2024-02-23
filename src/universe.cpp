@@ -22,6 +22,26 @@ Universe::Universe(size_t rows, size_t cols): m_rows(rows), m_cols(cols) {
     }
 }
 
+std::vector<std::pair<size_t, size_t>> Universe::getNeighborsPos(size_t row, size_t col) {
+    int64_t row_count = static_cast<int64_t>(m_rows);
+    int64_t col_count = static_cast<int64_t>(m_cols);
+    std::vector<std::pair<size_t, size_t>> pos;
+    for (int dr = -1; dr < 2; dr++) {
+        for (int dc = -1; dc < 2; dc++) {
+            if (dr == 0 && dc == 0) {
+                continue;
+            }
+            int64_t nei_row = row + dr;
+            int64_t nei_col = col + dc;
+            if (nei_row < 0 || nei_row >= row_count || nei_col < 0 || nei_col >= col_count) {
+                continue;
+            }
+            pos.push_back({nei_row, nei_col});
+        }
+    }
+    return pos;
+}
+
 Universe::Universe(const std::filesystem::path& file_path) {}
 
 void Universe::save(const std::filesystem::path& file_path) const {
@@ -112,21 +132,9 @@ DenseUniverse::DenseUniverse(const std::filesystem::path& file_path): Universe(f
 
 std::vector<Cell*> DenseUniverse::getNeighbors(const Cell& cell) {
     std::vector<Cell*> neighbors;
-    int64_t row_count = static_cast<int64_t>(m_rows);
-    int64_t col_count = static_cast<int64_t>(m_cols);
     auto& grid = getCurrentGrid();
-    for (int dr = -1; dr < 2; dr++) {
-        for (int dc = -1; dc < 2; dc++) {
-            if (dr == 0 && dc == 0) {
-                continue;
-            }
-            int64_t nei_row = cell.row() + dr;
-            int64_t nei_col = cell.col() + dc;
-            if (nei_row < 0 || nei_row >= row_count || nei_col < 0 || nei_col >= col_count) {
-                continue;
-            }
-            neighbors.push_back(&grid[nei_row][nei_col]);
-        }
+    for (const auto&[row, col]: getNeighborsPos(cell.row(), cell.col())) {
+        neighbors.push_back(&grid[row][col]);
     }
     return neighbors;
 }
@@ -264,25 +272,13 @@ void SparseUniverse::advance() {
     std::unordered_map<size_t, size_t> frontier_hit_count;
     std::set<std::unique_ptr<Cell>> next_alive_cells;
     for (const std::unique_ptr<Cell>& cell: m_alive_cells) {
-        int64_t row_count = static_cast<int64_t>(m_rows);
-        int64_t col_count = static_cast<int64_t>(m_cols);
         size_t alive_count = 0;
-        for (int dr = -1; dr < 2; dr++) {
-            for (int dc = -1; dc < 2; dc++) {
-                if (dr == 0 && dc == 0) {
-                    continue;
-                }
-                int64_t nei_row = cell->row() + dr;
-                int64_t nei_col = cell->col() + dc;
-                if (nei_row < 0 || nei_row >= row_count || nei_col < 0 || nei_col >= col_count) {
-                    continue;
-                }
-                if (findAliveCellByPos(nei_row, nei_col) == m_alive_cells.end()) {
-                    frontier_hit_count[{m_cols * nei_row + nei_col}]++;
-                }
-                else {
-                    alive_count++;
-                }
+        for (const auto& [nei_row, nei_col]: getNeighborsPos(cell->row(), cell->col())) {
+            if (findAliveCellByPos(nei_row, nei_col) == m_alive_cells.end()) {
+                frontier_hit_count[{m_cols * nei_row + nei_col}]++;
+            }
+            else {
+                alive_count++;
             }
         }
         if (alive_count == 2 || alive_count == 3) {
@@ -290,6 +286,7 @@ void SparseUniverse::advance() {
             next_alive_cells.insert(std::move(cell_copy));
         }
     }
+
     for (const auto& [flat_pos, alive_count]: frontier_hit_count) {
         if (alive_count != 3) {
             continue;
@@ -369,25 +366,13 @@ void SparseUniverseV2::advance() {
     std::unordered_map<size_t, size_t> frontier_hit_count;
     std::unordered_map<size_t, Cell> next_alive_cells;
     for (const auto& [flat_pos, cell]: m_alive_cells) {
-        int64_t row_count = static_cast<int64_t>(m_rows);
-        int64_t col_count = static_cast<int64_t>(m_cols);
         size_t alive_count = 0;
-        for (int dr = -1; dr < 2; dr++) {
-            for (int dc = -1; dc < 2; dc++) {
-                if (dr == 0 && dc == 0) {
-                    continue;
-                }
-                int64_t nei_row = cell.row() + dr;
-                int64_t nei_col = cell.col() + dc;
-                if (nei_row < 0 || nei_row >= row_count || nei_col < 0 || nei_col >= col_count) {
-                    continue;
-                }
-                if (findAliveCellByPos(nei_row, nei_col) == m_alive_cells.end()) {
-                    frontier_hit_count[{m_cols * nei_row + nei_col}]++;
-                }
-                else {
-                    alive_count++;
-                }
+        for (const auto& [nei_row, nei_col]: getNeighborsPos(cell.row(), cell.col())) {
+            if (findAliveCellByPos(nei_row, nei_col) == m_alive_cells.end()) {
+                frontier_hit_count[{m_cols * nei_row + nei_col}]++;
+            }
+            else {
+                alive_count++;
             }
         }
         if (alive_count == 2 || alive_count == 3) {

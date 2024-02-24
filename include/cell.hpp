@@ -6,6 +6,7 @@
 
 class Cell {
     public:
+        Cell();
         Cell(size_t row, size_t col, size_t flat_pos, bool alive=false);
         bool isAlive() const;
         size_t row() const { return m_row; }

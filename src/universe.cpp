@@ -9,11 +9,6 @@
 #include "universe.hpp"
 #include "cell.hpp"
 
-struct UniverseFileData {
-    size_t rows;
-    size_t cols;
-    std::vector<std::pair<size_t, size_t>> alive_cells_pos;
-};
 
 Universe::Universe(size_t rows, size_t cols): m_rows(rows), m_cols(cols) {
     size_t max_dim = static_cast<size_t>(pow(2, 32));

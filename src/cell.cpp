@@ -2,6 +2,9 @@
 
 #include "cell.hpp"
 
+Cell::Cell():
+    m_row(0), m_col(0), m_flat_pos(0), m_is_alive(false) {}
+
 Cell::Cell(size_t row, size_t col, size_t flat_pos, bool alive):
     m_row(row), m_col(col), m_flat_pos(flat_pos), m_is_alive(alive) {}
 

@@ -60,6 +60,28 @@ class SparseUniverse: public Universe {
     public:
         SparseUniverse(size_t rows, size_t cols);
         SparseUniverse(const std::filesystem::path& file_path);
+        virtual void advance() override;
+        virtual bool isCellAlive(size_t row, size_t col) override;
+        virtual void makeCellAlive(size_t row, size_t col) override;
+        virtual void makeCellDead(size_t row, size_t col) override;
+        std::vector<std::pair<size_t, size_t>> getAliveCellsPos() const = 0;
+        void save(const std::filesystem::path& file_path) const;
+        void load(const std::filesystem::path& file_path);
+    protected:
+        virtual std::vector<Cell*> getAliveCells() = 0;
+        virtual Cell* findAliveCellByPos(size_t row, size_t col) = 0;
+        virtual void makeAndInsertNextAliveCell(size_t row, size_t col, size_t flat_pos) = 0;
+        virtual void makeAndInsertAliveCell(size_t row, size_t col, size_t flat_pos) = 0;
+        virtual void deleteCell(size_t row, size_t col) = 0;
+        virtual void swapBuffers() = 0;
+        virtual void clearBuffer() = 0;
+        virtual void clearNextBuffer() = 0;
+};
+
+class SparseUniverseV1: public SparseUniverse {
+    public:
+        SparseUniverseV1(size_t rows, size_t cols);
+        SparseUniverseV1(const std::filesystem::path& file_path);
         void advance() override;
         bool isCellAlive(size_t row, size_t col) override;
         void makeCellAlive(size_t row, size_t col) override;
@@ -68,11 +90,20 @@ class SparseUniverse: public Universe {
         void save(const std::filesystem::path& file_path) const override;
         void load(const std::filesystem::path& file_path) override;
     private:
-        std::set<std::unique_ptr<Cell>>::iterator findAliveCellByPos(size_t row, size_t col);
+        std::vector<Cell*> getAliveCells() override;
+        Cell* findAliveCellByPos(size_t row, size_t col) override;
+        std::set<std::unique_ptr<Cell>>::iterator findAliveCellIterByPos(size_t row, size_t col);
+        void makeAndInsertNextAliveCell(size_t row, size_t col, size_t flat_pos) override;
+        void makeAndInsertAliveCell(size_t row, size_t col, size_t flat_pos) override;
+        void deleteCell(size_t row, size_t col) override;
+        void swapBuffers() override;
+        void clearBuffer() override;
+        void clearNextBuffer() override;
         std::set<std::unique_ptr<Cell>> m_alive_cells;
+        std::set<std::unique_ptr<Cell>> m_next_alive_cells;
 };
 
-class SparseUniverseV2: public Universe {
+class SparseUniverseV2: public SparseUniverse {
     public:
         SparseUniverseV2(size_t rows, size_t cols);
         SparseUniverseV2(const std::filesystem::path& file_path);
@@ -84,8 +115,16 @@ class SparseUniverseV2: public Universe {
         void save(const std::filesystem::path& file_path) const override;
         void load(const std::filesystem::path& file_path) override;
     private:
-        std::unordered_map<size_t, Cell>::iterator findAliveCellByPos(size_t row, size_t col);
+        std::vector<Cell*> getAliveCells() override;
+        Cell* findAliveCellByPos(size_t row, size_t col) override;
+        void makeAndInsertNextAliveCell(size_t row, size_t col, size_t flat_pos) override;
+        void makeAndInsertAliveCell(size_t row, size_t col, size_t flat_pos) override;
+        void deleteCell(size_t row, size_t col) override;
+        void swapBuffers() override;
+        void clearBuffer() override;
+        void clearNextBuffer() override;
         std::unordered_map<size_t, Cell> m_alive_cells;
+        std::unordered_map<size_t, Cell> m_next_alive_cells;
 };
 
 

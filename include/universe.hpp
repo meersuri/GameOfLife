@@ -70,8 +70,8 @@ class SparseUniverse: public Universe {
     protected:
         virtual std::vector<Cell*> getAliveCells() = 0;
         virtual Cell* findAliveCellByPos(size_t row, size_t col) = 0;
-        virtual void makeAndInsertNextAliveCell(size_t row, size_t col, size_t flat_pos) = 0;
-        virtual void makeAndInsertAliveCell(size_t row, size_t col, size_t flat_pos) = 0;
+        virtual void makeAndInsertNextAliveCell(size_t row, size_t col) = 0;
+        virtual void makeAndInsertAliveCell(size_t row, size_t col) = 0;
         virtual void deleteCell(size_t row, size_t col) = 0;
         virtual void swapBuffers() = 0;
         virtual void clearBuffer() = 0;
@@ -93,8 +93,8 @@ class SparseUniverseV1: public SparseUniverse {
         std::vector<Cell*> getAliveCells() override;
         Cell* findAliveCellByPos(size_t row, size_t col) override;
         std::set<std::unique_ptr<Cell>>::iterator findAliveCellIterByPos(size_t row, size_t col);
-        void makeAndInsertNextAliveCell(size_t row, size_t col, size_t flat_pos) override;
-        void makeAndInsertAliveCell(size_t row, size_t col, size_t flat_pos) override;
+        void makeAndInsertNextAliveCell(size_t row, size_t col) override;
+        void makeAndInsertAliveCell(size_t row, size_t col) override;
         void deleteCell(size_t row, size_t col) override;
         void swapBuffers() override;
         void clearBuffer() override;
@@ -117,8 +117,8 @@ class SparseUniverseV2: public SparseUniverse {
     private:
         std::vector<Cell*> getAliveCells() override;
         Cell* findAliveCellByPos(size_t row, size_t col) override;
-        void makeAndInsertNextAliveCell(size_t row, size_t col, size_t flat_pos) override;
-        void makeAndInsertAliveCell(size_t row, size_t col, size_t flat_pos) override;
+        void makeAndInsertNextAliveCell(size_t row, size_t col) override;
+        void makeAndInsertAliveCell(size_t row, size_t col) override;
         void deleteCell(size_t row, size_t col) override;
         void swapBuffers() override;
         void clearBuffer() override;

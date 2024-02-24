@@ -232,7 +232,7 @@ bool SparseUniverse::isCellAlive(size_t row, size_t col) {
 
 void SparseUniverse::makeCellAlive(size_t row, size_t col) {
     if (!findAliveCellByPos(row, col)) {
-        makeAndInsertAliveCell(row, col, m_cols * row + col);
+        makeAndInsertAliveCell(row, col);
     }
 }
 
@@ -257,7 +257,7 @@ void SparseUniverse::advance() {
             }
         }
         if (alive_count == 2 || alive_count == 3) {
-            makeAndInsertNextAliveCell(cell->row(), cell->col(), cell->flatPos());
+            makeAndInsertNextAliveCell(cell->row(), cell->col());
         }
     }
 
@@ -267,7 +267,7 @@ void SparseUniverse::advance() {
         }
         size_t row = flat_pos / m_cols;
         size_t col = flat_pos % m_cols;
-        makeAndInsertNextAliveCell(row, col, flat_pos);
+        makeAndInsertNextAliveCell(row, col);
     }
     swapBuffers();
 }
@@ -283,9 +283,7 @@ void SparseUniverse::load(const std::filesystem::path& file_path) {
         throw std::runtime_error("Cannot load a universe with a mismatched size");
     }
     for (const std::pair<size_t, size_t>& p: fdata.alive_cells_pos) {
-        size_t row = p.first;
-        size_t col = p.second;
-        makeAndInsertAliveCell(row, col, m_cols * row + col);
+        makeAndInsertAliveCell(p.first, p.second);
     }
 }
 
@@ -298,7 +296,7 @@ SparseUniverseV1::SparseUniverseV1(const std::filesystem::path& file_path): Spar
     for (const std::pair<size_t, size_t>& p: fdata.alive_cells_pos) {
         size_t row = p.first;
         size_t col = p.second;
-        makeAndInsertAliveCell(row, col, m_cols * row + col);
+        makeAndInsertAliveCell(row, col);
     }
 }
 
@@ -348,13 +346,13 @@ std::vector<Cell*> SparseUniverseV1::getAliveCells() {
     return cells;
 }
 
-void SparseUniverseV1::makeAndInsertAliveCell(size_t row, size_t col, size_t flat_pos) {
-    auto cell = std::make_unique<Cell>(row, col, flat_pos, true);
+void SparseUniverseV1::makeAndInsertAliveCell(size_t row, size_t col) {
+    auto cell = std::make_unique<Cell>(row, col, m_cols * row + col, true);
     m_alive_cells.insert(std::move(cell));
 }
 
-void SparseUniverseV1::makeAndInsertNextAliveCell(size_t row, size_t col, size_t flat_pos) {
-    auto cell = std::make_unique<Cell>(row, col, flat_pos, true);
+void SparseUniverseV1::makeAndInsertNextAliveCell(size_t row, size_t col) {
+    auto cell = std::make_unique<Cell>(row, col, m_cols * row + col, true);
     m_next_alive_cells.insert(std::move(cell));
 }
 
@@ -396,9 +394,7 @@ SparseUniverseV2::SparseUniverseV2(const std::filesystem::path& file_path): Spar
     m_rows = fdata.rows;
     m_cols = fdata.cols;
     for (const std::pair<size_t, size_t>& p: fdata.alive_cells_pos) {
-        size_t row = p.first;
-        size_t col = p.second;
-        makeAndInsertAliveCell(row, col, m_cols * row + col);
+        makeAndInsertAliveCell(p.first, p.second);
     }
 }
 
@@ -435,11 +431,13 @@ std::vector<Cell*> SparseUniverseV2::getAliveCells() {
     return cells;
 }
 
-void SparseUniverseV2::makeAndInsertAliveCell(size_t row, size_t col, size_t flat_pos) {
+void SparseUniverseV2::makeAndInsertAliveCell(size_t row, size_t col) {
+    size_t flat_pos = m_cols * row + col;
     m_alive_cells.emplace(flat_pos, Cell(row, col, flat_pos, true));
 }
 
-void SparseUniverseV2::makeAndInsertNextAliveCell(size_t row, size_t col, size_t flat_pos) {
+void SparseUniverseV2::makeAndInsertNextAliveCell(size_t row, size_t col) {
+    size_t flat_pos = m_cols * row + col;
     m_next_alive_cells.emplace(flat_pos, Cell(row, col, flat_pos, true));
 }
 

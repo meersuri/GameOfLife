@@ -22,10 +22,10 @@ Universe::Universe(size_t rows, size_t cols): m_rows(rows), m_cols(cols) {
     }
 }
 
-std::vector<std::pair<size_t, size_t>> Universe::getNeighborsPos(size_t row, size_t col) {
+std::array<std::optional<std::pair<size_t, size_t>>, 8> Universe::getNeighborsPos(size_t row, size_t col) {
     int64_t row_count = static_cast<int64_t>(m_rows);
     int64_t col_count = static_cast<int64_t>(m_cols);
-    std::vector<std::pair<size_t, size_t>> pos;
+    size_t nei_idx = 0;
     for (int dr = -1; dr < 2; dr++) {
         for (int dc = -1; dc < 2; dc++) {
             if (dr == 0 && dc == 0) {
@@ -36,10 +36,13 @@ std::vector<std::pair<size_t, size_t>> Universe::getNeighborsPos(size_t row, siz
             if (nei_row < 0 || nei_row >= row_count || nei_col < 0 || nei_col >= col_count) {
                 continue;
             }
-            pos.push_back({nei_row, nei_col});
+            m_neighbor_pos[nei_idx++] = {nei_row, nei_col};
         }
     }
-    return pos;
+    for (; nei_idx < 8; ++nei_idx) {
+        m_neighbor_pos[nei_idx] = std::nullopt;
+    }
+    return m_neighbor_pos;
 }
 
 Universe::Universe(const std::filesystem::path& file_path) {}
@@ -133,8 +136,11 @@ DenseUniverse::DenseUniverse(const std::filesystem::path& file_path): Universe(f
 std::vector<Cell*> DenseUniverse::getNeighbors(const Cell& cell) {
     std::vector<Cell*> neighbors;
     auto& grid = getCurrentGrid();
-    for (const auto&[row, col]: getNeighborsPos(cell.row(), cell.col())) {
-        neighbors.push_back(&grid[row][col]);
+    for (const auto& pos: getNeighborsPos(cell.row(), cell.col())) {
+        if (pos.has_value()) {
+            const auto& [row, col] = pos.value();
+            neighbors.push_back(&grid[row][col]);
+        }
     }
     return neighbors;
 }
@@ -248,7 +254,11 @@ void SparseUniverse::advance() {
     std::unordered_map<size_t, size_t> frontier_hit_count;
     for (Cell* cell: getAliveCells()) {
         size_t alive_count = 0;
-        for (const auto& [nei_row, nei_col]: getNeighborsPos(cell->row(), cell->col())) {
+        for (const auto& pos: getNeighborsPos(cell->row(), cell->col())) {
+            if (!pos.has_value()) {
+                continue;
+            }
+            const auto& [nei_row, nei_col] = pos.value();
             if (!findAliveCellByPos(nei_row, nei_col)) {
                 frontier_hit_count[{m_cols * nei_row + nei_col}]++;
             }

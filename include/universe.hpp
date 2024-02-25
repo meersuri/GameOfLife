@@ -52,7 +52,7 @@ class DenseUniverse: public Universe {
         void save(const std::filesystem::path& file_path) const override;
         void load(const std::filesystem::path& file_path) override;
     private:
-        void createCells();
+        void initCells();
         std::vector<Cell*> getNeighbors(const Cell& cell);
         std::vector<std::vector<Cell>>& getCurrentGrid();
         const std::vector<std::vector<Cell>>& getCurrentGrid() const;

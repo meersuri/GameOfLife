@@ -93,7 +93,7 @@ UniverseFileData Universe::parseFile(const std::filesystem::path& file_path) {
 }
 
 DenseUniverse::DenseUniverse(size_t rows, size_t cols): Universe(rows, cols) {
-    createCells();
+    initCells();
 }
 
 std::vector<std::vector<Cell>>& DenseUniverse::getCurrentGrid() {
@@ -104,7 +104,7 @@ const std::vector<std::vector<Cell>>& DenseUniverse::getCurrentGrid() const {
     return m_grid_1_is_current ? m_cell_grid_1 : m_cell_grid_2;
 }
 
-void DenseUniverse::createCells() {
+void DenseUniverse::initCells() {
     for (size_t row = 0; row < m_rows; ++row) {
         std::vector<Cell> cell_row_1;
         std::vector<Cell> cell_row_2;
@@ -121,7 +121,7 @@ DenseUniverse::DenseUniverse(const std::filesystem::path& file_path): Universe(f
     auto fdata = Universe::parseFile(file_path);
     m_rows = fdata.rows;
     m_cols = fdata.cols;
-    createCells();
+    initCells();
     auto& grid = getCurrentGrid();
     for (const std::pair<size_t, size_t>& p: fdata.alive_cells_pos) {
         grid[p.first][p.second].makeAlive();

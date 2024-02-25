@@ -33,7 +33,7 @@ class Universe {
         virtual ~Universe() {};
     protected:
         UniverseFileData parseFile(const std::filesystem::path& file_path);
-        std::array<std::optional<std::pair<size_t, size_t>>, 8> getNeighborsPos(size_t row, size_t col);
+        std::array<std::optional<std::pair<size_t, size_t>>, 8>& getNeighborsPos(size_t row, size_t col);
         size_t m_rows;
         size_t m_cols;
         std::array<std::optional<std::pair<size_t, size_t>>, 8> m_neighbor_pos;

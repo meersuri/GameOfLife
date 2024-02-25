@@ -17,7 +17,7 @@ Universe::Universe(size_t rows, size_t cols): m_rows(rows), m_cols(cols) {
     }
 }
 
-std::array<std::optional<std::pair<size_t, size_t>>, 8> Universe::getNeighborsPos(size_t row, size_t col) {
+std::array<std::optional<std::pair<size_t, size_t>>, 8>& Universe::getNeighborsPos(size_t row, size_t col) {
     int64_t row_count = static_cast<int64_t>(m_rows);
     int64_t col_count = static_cast<int64_t>(m_cols);
     size_t nei_idx = 0;

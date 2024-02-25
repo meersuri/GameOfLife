@@ -37,6 +37,7 @@ class Universe {
         size_t m_rows;
         size_t m_cols;
         std::array<std::optional<std::pair<size_t, size_t>>, 8> m_neighbor_pos;
+        std::array<std::optional<Cell*>, 8> m_neighbors;
 };
 
 // keeps all Cells in memory
@@ -53,7 +54,7 @@ class DenseUniverse: public Universe {
         void load(const std::filesystem::path& file_path) override;
     private:
         void initCells();
-        std::vector<Cell*> getNeighbors(const Cell& cell);
+        std::array<std::optional<Cell*>, 8> getNeighbors(const Cell& cell);
         Cell* getCurrentGridCell(size_t row, size_t col);
         Cell const* getCurrentGridCell(size_t row, size_t col) const;
         Cell* getNextGridCell(size_t row, size_t col);
@@ -198,7 +199,6 @@ DenseUniverseV2<Rows, Cols>::DenseUniverseV2(const std::filesystem::path& file_p
 
 template <size_t Rows, size_t Cols>
 std::array<std::optional<Cell*>, 8> DenseUniverseV2<Rows, Cols>::getNeighbors(const Cell& cell) {
-    std::vector<Cell*> neighbors;
     auto& grid = getCurrentGrid();
     size_t nei_idx = 0;
     for (const auto& pos: getNeighborsPos(cell.row(), cell.col())) {

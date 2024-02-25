@@ -131,15 +131,18 @@ DenseUniverse::DenseUniverse(const std::filesystem::path& file_path): Universe(f
     }
 }
 
-std::vector<Cell*> DenseUniverse::getNeighbors(const Cell& cell) {
-    std::vector<Cell*> neighbors;
+std::array<std::optional<Cell*>, 8> DenseUniverse::getNeighbors(const Cell& cell) {
+    size_t nei_idx = 0;
     for (const auto& pos: getNeighborsPos(cell.row(), cell.col())) {
         if (pos.has_value()) {
             const auto& [row, col] = pos.value();
-            neighbors.push_back(getCurrentGridCell(row, col));
+            m_neighbors[nei_idx++] = getCurrentGridCell(row, col);
+        }
+        else {
+            m_neighbors[nei_idx++] = std::nullopt;
         }
     }
-    return neighbors;
+    return m_neighbors;
 }
 
 bool DenseUniverse::isCellAlive(size_t row, size_t col) {
@@ -159,8 +162,11 @@ void DenseUniverse::advance() {
         for (size_t col = 0; col < m_cols; col++) {
             Cell* cell = getCurrentGridCell(row, col);
             size_t alive_count = 0;
-            for (Cell* neighbor: getNeighbors(*cell)) {
-                alive_count = neighbor->isAlive() ? alive_count + 1: alive_count;
+            for (std::optional<Cell*> neighbor: getNeighbors(*cell)) {
+                if (!neighbor.has_value()) {
+                    continue;
+                }
+                alive_count = neighbor.value()->isAlive() ? alive_count + 1: alive_count;
             }
             if (cell->isAlive()) {
                 if (alive_count < 2 || alive_count > 3) {

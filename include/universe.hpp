@@ -54,8 +54,9 @@ class DenseUniverse: public Universe {
     private:
         void initCells();
         std::vector<Cell*> getNeighbors(const Cell& cell);
-        std::vector<std::vector<Cell>>& getCurrentGrid();
-        const std::vector<std::vector<Cell>>& getCurrentGrid() const;
+        Cell* getCurrentGridCell(size_t row, size_t col);
+        Cell const* getCurrentGridCell(size_t row, size_t col) const;
+        Cell* getNextGridCell(size_t row, size_t col);
         std::vector<std::vector<Cell>> m_cell_grid_1;
         std::vector<std::vector<Cell>> m_cell_grid_2;
         bool m_grid_1_is_current{true};

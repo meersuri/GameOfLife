@@ -96,12 +96,16 @@ DenseUniverse::DenseUniverse(size_t rows, size_t cols): Universe(rows, cols) {
     initCells();
 }
 
-std::vector<std::vector<Cell>>& DenseUniverse::getCurrentGrid() {
-    return m_grid_1_is_current ? m_cell_grid_1 : m_cell_grid_2;
+Cell* DenseUniverse::getCurrentGridCell(size_t row, size_t col) {
+    return m_grid_1_is_current ? &m_cell_grid_1[row][col] : &m_cell_grid_2[row][col];
 }
 
-const std::vector<std::vector<Cell>>& DenseUniverse::getCurrentGrid() const {
-    return m_grid_1_is_current ? m_cell_grid_1 : m_cell_grid_2;
+Cell const* DenseUniverse::getCurrentGridCell(size_t row, size_t col) const {
+    return m_grid_1_is_current ? &m_cell_grid_1[row][col] : &m_cell_grid_2[row][col];
+}
+
+Cell* DenseUniverse::getNextGridCell(size_t row, size_t col) {
+    return m_grid_1_is_current ? &m_cell_grid_2[row][col] : &m_cell_grid_1[row][col];
 }
 
 void DenseUniverse::initCells() {
@@ -122,65 +126,56 @@ DenseUniverse::DenseUniverse(const std::filesystem::path& file_path): Universe(f
     m_rows = fdata.rows;
     m_cols = fdata.cols;
     initCells();
-    auto& grid = getCurrentGrid();
     for (const std::pair<size_t, size_t>& p: fdata.alive_cells_pos) {
-        grid[p.first][p.second].makeAlive();
+        getCurrentGridCell(p.first, p.second)->makeAlive();
     }
 }
 
 std::vector<Cell*> DenseUniverse::getNeighbors(const Cell& cell) {
     std::vector<Cell*> neighbors;
-    auto& grid = getCurrentGrid();
     for (const auto& pos: getNeighborsPos(cell.row(), cell.col())) {
         if (pos.has_value()) {
             const auto& [row, col] = pos.value();
-            neighbors.push_back(&grid[row][col]);
+            neighbors.push_back(getCurrentGridCell(row, col));
         }
     }
     return neighbors;
 }
 
 bool DenseUniverse::isCellAlive(size_t row, size_t col) {
-    // TODO adds bounds checking?
-    const auto& grid = getCurrentGrid();
-    return grid[row][col].isAlive();
+    return getCurrentGridCell(row, col)->isAlive();
 }
 
 void DenseUniverse::makeCellAlive(size_t row, size_t col) {
-    auto& grid = getCurrentGrid();
-    grid[row][col].makeAlive();
+    getCurrentGridCell(row, col)->makeAlive();
 }
 
 void DenseUniverse::makeCellDead(size_t row, size_t col) {
-    auto& grid = getCurrentGrid();
-    grid[row][col].makeDead();
+    getCurrentGridCell(row, col)->makeDead();
 }
 
 void DenseUniverse::advance() {
-    const auto& grid = getCurrentGrid();
-    auto& next_grid = m_grid_1_is_current ? m_cell_grid_2 : m_cell_grid_1;
-
     for (size_t row = 0; row < m_rows; row++) {
         for (size_t col = 0; col < m_cols; col++) {
-            const Cell& cell = grid[row][col];
+            Cell* cell = getCurrentGridCell(row, col);
             size_t alive_count = 0;
-            for (Cell* neighbor: getNeighbors(cell)) {
+            for (Cell* neighbor: getNeighbors(*cell)) {
                 alive_count = neighbor->isAlive() ? alive_count + 1: alive_count;
             }
-            if (cell.isAlive()) {
+            if (cell->isAlive()) {
                 if (alive_count < 2 || alive_count > 3) {
-                    next_grid[row][col].makeDead();
+                    getNextGridCell(row,col)->makeDead();
                 }
                 else {
-                    next_grid[row][col].makeAlive();
+                    getNextGridCell(row,col)->makeAlive();
                 }
             }
             else {
                 if (alive_count == 3) {
-                    next_grid[row][col].makeAlive();
+                    getNextGridCell(row,col)->makeAlive();
                 }
                 else {
-                    next_grid[row][col].makeDead();
+                    getNextGridCell(row,col)->makeDead();
                 }
             }
         }
@@ -191,10 +186,9 @@ void DenseUniverse::advance() {
 
 std::vector<std::pair<size_t, size_t>> DenseUniverse::getAliveCellsPos() const {
     std::vector<std::pair<size_t, size_t>> alive_pos;
-    const auto& grid = getCurrentGrid();
     for (size_t row = 0; row < m_rows; row++) {
         for (size_t col = 0; col < m_cols; col++) {
-            if (grid[row][col].isAlive()) {
+            if (getCurrentGridCell(row, col)->isAlive()) {
                 alive_pos.push_back({row, col});
             }
         }
@@ -207,10 +201,9 @@ void DenseUniverse::save(const std::filesystem::path& file_path) const {
 }
 
 void DenseUniverse::load(const std::filesystem::path& file_path) {
-    auto& grid = getCurrentGrid();
     for (size_t row = 0; row < m_rows; ++row) {
         for (size_t col = 0; col < m_cols; ++col) {
-            grid[row][col].makeDead();
+            getCurrentGridCell(row, col)->makeDead();
         }
     }
     auto fdata = Universe::parseFile(file_path);
@@ -218,7 +211,7 @@ void DenseUniverse::load(const std::filesystem::path& file_path) {
         throw std::runtime_error("Cannot load a universe with a mismatched size");
     }
     for (const std::pair<size_t, size_t>& p: fdata.alive_cells_pos) {
-        grid[p.first][p.second].makeAlive();
+        getCurrentGridCell(p.first, p.second)->makeAlive();
     }
 }
 

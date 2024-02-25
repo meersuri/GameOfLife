@@ -285,49 +285,49 @@ void testCreateUniverseFromFile() {
     }
 }
 
-// DenseUniverse tests
-TEST(DenseUniverseTests, UniverseStartsDead) {
-    testUniverseStartsDead(std::make_unique<DenseUniverse>(3, 4));
+// DenseUniverseV1 tests
+TEST(DenseUniverseV1Tests, UniverseStartsDead) {
+    testUniverseStartsDead(std::make_unique<DenseUniverseV1>(3, 4));
 }
 
-TEST(DenseUniverseTests, makeCellAlive) {
-    testMakeCellAlive(std::make_unique<DenseUniverse>(1, 1));
+TEST(DenseUniverseV1Tests, makeCellAlive) {
+    testMakeCellAlive(std::make_unique<DenseUniverseV1>(1, 1));
 }
 
-TEST(DenseUniverseTests, makeCellDead) {
-    testMakeCellDead(std::make_unique<DenseUniverse>(1, 1));
+TEST(DenseUniverseV1Tests, makeCellDead) {
+    testMakeCellDead(std::make_unique<DenseUniverseV1>(1, 1));
 }
 
-TEST(DenseUniverseTests, cellComesAlive) {
-    testNonEdgeCellComesAlive<DenseUniverse>();
-    testEdgeCellComesAlive<DenseUniverse>();
-    testCornerCellComesAlive<DenseUniverse>();
+TEST(DenseUniverseV1Tests, cellComesAlive) {
+    testNonEdgeCellComesAlive<DenseUniverseV1>();
+    testEdgeCellComesAlive<DenseUniverseV1>();
+    testCornerCellComesAlive<DenseUniverseV1>();
 }
 
-TEST(DenseUniverseTests, cellStaysDead) {
-    testNonEdgeCellStaysDead<DenseUniverse>();
-    testEdgeCellStaysDead<DenseUniverse>();
-    testCornerCellStaysDead<DenseUniverse>();
+TEST(DenseUniverseV1Tests, cellStaysDead) {
+    testNonEdgeCellStaysDead<DenseUniverseV1>();
+    testEdgeCellStaysDead<DenseUniverseV1>();
+    testCornerCellStaysDead<DenseUniverseV1>();
 }
 
-TEST(DenseUniverseTests, cellDies) {
-    testNonEdgeCellDies<DenseUniverse>();
-    testEdgeCellDies<DenseUniverse>();
-    testCornerCellDies<DenseUniverse>();
+TEST(DenseUniverseV1Tests, cellDies) {
+    testNonEdgeCellDies<DenseUniverseV1>();
+    testEdgeCellDies<DenseUniverseV1>();
+    testCornerCellDies<DenseUniverseV1>();
 }
 
-TEST(DenseUniverseTests, cellStaysAlive) {
-    testNonEdgeCellStaysAlive<DenseUniverse>();
-    testEdgeCellStaysAlive<DenseUniverse>();
-    testCornerCellStaysAlive<DenseUniverse>();
+TEST(DenseUniverseV1Tests, cellStaysAlive) {
+    testNonEdgeCellStaysAlive<DenseUniverseV1>();
+    testEdgeCellStaysAlive<DenseUniverseV1>();
+    testCornerCellStaysAlive<DenseUniverseV1>();
 }
 
-TEST(DenseUniverseTests, saveAndLoad) {
-    testSaveLoad<DenseUniverse>();
+TEST(DenseUniverseV1Tests, saveAndLoad) {
+    testSaveLoad<DenseUniverseV1>();
 }
 
-TEST(DenseUniverseTests, createFromFile) {
-    testCreateUniverseFromFile<DenseUniverse>();
+TEST(DenseUniverseV1Tests, createFromFile) {
+    testCreateUniverseFromFile<DenseUniverseV1>();
 }
 
 // SparseUniverse tests
